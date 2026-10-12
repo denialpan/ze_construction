@@ -2,7 +2,7 @@
 
 Layer0
 {
-	shader "simple.vfx"
+	shader "csgo_simple.vfx"
 
 	//---- Ambient Occlusion ----
 	TextureAmbientOcclusion "materials/default/default_ao.tga"
@@ -17,49 +17,19 @@ Layer0
 	g_vTexCoordOffset "[0.000 0.000]"
 	g_vTexCoordScale "[1.000 1.000]"
 	g_vTexCoordScrollSpeed "[0.000 0.000]"
-	TextureColor "materials/ddd/glass/extwindow2_color.png"
+	TextureColor "materials/ddd/monitor_1.png"
 
 	//---- Fog ----
 	g_bFogEnabled "1"
 
 	//---- Lighting ----
-	g_flMetalness "0.901"
-	TextureRoughness "materials/default/stickers/default_rough.tga"
+	g_flMetalness "0.000"
+	TextureRoughness "[0.501961 0.501961 0.501961 0.000000]"
 
 	//---- Normal Map ----
-	TextureNormal "materials/ddd/glass/extwindow2_normal.png"
+	TextureNormal "materials/default/default_normal.tga"
 
 	//---- Texture Address Mode ----
 	g_nTextureAddressModeU "0" // Wrap
 	g_nTextureAddressModeV "0" // Wrap
-
-	SystemAttributes
-	{
-		PhysicsSurfaceProperties "glass"
-	}
-
-
-	VariableState
-	{
-		"Ambient Occlusion"
-		{
-		}
-		"Color"
-		{
-		}
-		"Fog"
-		{
-		}
-		"Lighting"
-		{
-			"Roughness" 0
-			"Metalness" 0
-		}
-		"Normal Map"
-		{
-		}
-		"Texture Address Mode"
-		{
-		}
-	}
 }
