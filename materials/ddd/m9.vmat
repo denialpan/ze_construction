@@ -5,7 +5,7 @@ Layer0
 	shader "csgo_simple.vfx"
 
 	//---- Ambient Occlusion ----
-	TextureAmbientOcclusion ""
+	TextureAmbientOcclusion "materials/default/default_ao.tga"
 
 	//---- Color ----
 	g_flModelTintAmount "1.000"
@@ -17,19 +17,44 @@ Layer0
 	g_vTexCoordOffset "[0.000 0.000]"
 	g_vTexCoordScale "[1.000 1.000]"
 	g_vTexCoordScrollSpeed "[0.000 0.000]"
-	TextureColor ""
+	TextureColor "materials/ddd/m9-bayonet-black-laminate-base-color.png"
 
 	//---- Fog ----
 	g_bFogEnabled "1"
 
 	//---- Lighting ----
 	g_flMetalness "0.000"
-	TextureRoughness ""
+	TextureRoughness "[1.000000 1.000000 1.000000 1.000000]"
 
 	//---- Normal Map ----
-	TextureNormal ""
+	TextureNormal "materials/default/default_normal.tga"
 
 	//---- Texture Address Mode ----
 	g_nTextureAddressModeU "0" // Wrap
 	g_nTextureAddressModeV "0" // Wrap
+
+
+	VariableState
+	{
+		"Ambient Occlusion"
+		{
+		}
+		"Color"
+		{
+		}
+		"Fog"
+		{
+		}
+		"Lighting"
+		{
+			"Roughness" 0
+			"Metalness" 0
+		}
+		"Normal Map"
+		{
+		}
+		"Texture Address Mode"
+		{
+		}
+	}
 }
