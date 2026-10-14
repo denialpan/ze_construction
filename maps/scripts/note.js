@@ -7,7 +7,8 @@ const NOTE_CLOSE_RADIUS = 64;
 
 const NOTES = {
     note_1: "This is the first readable note.\\nThis line starts below it.",
-    note_2: "This is the second readable note."
+    note_2: "This is the second readable note.",
+	note_ending_secret: "I hate invisible walls, thank you for exploring the map!\\n\\n\\n\\n\\n98196542"
 };
 
 let noteLayout = null;

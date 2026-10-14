@@ -1,12 +1,12 @@
 <!-- kv3 encoding:text:version{e21c7f3c-8a33-41c5-9977-a76d3a32aa0d} format:generic:version{7412167c-06e9-4698-aff2-e63eb59037e7} -->
 {
 
-    d3.sui = 
+    d3.speed_again = 
     {
         type = "csgo_mega"
         volume = 2
         pitch = 1.000000
-		vsnd_files_track_01 = "sounds/sui.vsnd"
+		vsnd_files_track_01 = "sounds/speed_again.vsnd"
 		restrict_source_reverb = true
 		disable_volume_culling = true
 		position_relative_to_player = true
@@ -235,27 +235,16 @@
         type = "csgo_mega"
         volume = 4
         pitch = 1.000000
-        mixgroup = "Ambient"
         vsnd_files_track_01 = "sounds/flight_dolphin.vsnd"
-        distance_volume_mapping_curve = 
+        restrict_source_reverb = true
+		disable_volume_culling = true
+		position_relative_to_player = true
+        use_distance_unfiltered_stereo_mapping_curve = true
+        distance_unfiltered_stereo_mapping_curve = 
         [
-            
             [
-                0.000000,
-                1.000000,
-                0.000000,
-                0.000000,
-                2.000000,
-                3.000000,
-            ],
-            
-            [
-                4096.000000,
-                0.000000,
-                0.000000,
-                0.000000,
-                2.000000,
-                3.000000,
+                0, 1, 0, 0,
+                0, 0,
             ],
         ]
     }
