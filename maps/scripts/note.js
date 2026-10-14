@@ -2,7 +2,6 @@ import { CSInputs, Entity, Instance } from "cs_script/point_script";
 
 const NOTE_LAYOUT_NAME = "hud_note";
 const NOTE_PANEL_ID = "note";
-const NOTE_INPUT_NAME = "ShowNote";
 const NOTE_CLOSE_DELAY = 0.2;
 const NOTE_CLOSE_RADIUS = 64;
 
@@ -40,21 +39,6 @@ function GetPlayerController(entity) {
     }
 
     return undefined;
-}
-
-function GetNoteName(caller, activator) {
-    if (caller && caller.IsValid() && typeof caller.GetEntityName === "function") {
-        const callerName = caller.GetEntityName();
-        if (callerName) {
-            return callerName;
-        }
-    }
-
-    if (activator && activator.IsValid() && typeof activator.GetEntityName === "function") {
-        return activator.GetEntityName();
-    }
-
-    return "";
 }
 
 function GetPlayerPawn(player) {
@@ -151,15 +135,17 @@ function UpdateOpenNotes() {
     }
 }
 
-Instance.OnScriptInput(NOTE_INPUT_NAME, ({ activator, caller }) => {
-    const player = GetPlayerController(activator) || GetPlayerController(caller);
-    if (!player) {
-        Instance.Msg("note.js: ShowNote needs a player activator or caller");
-        return;
-    }
+for (const noteName in NOTES) {
+    Instance.OnScriptInput(noteName, ({ activator, caller }) => {
+        const player = GetPlayerController(activator) || GetPlayerController(caller);
+        if (!player) {
+            Instance.Msg(`note.js: ${noteName} needs a player activator or caller`);
+            return;
+        }
 
-    ShowNote(player, GetNoteName(caller, activator), caller);
-});
+        ShowNote(player, noteName, caller);
+    });
+}
 
 Instance.SetThink(UpdateOpenNotes);
 
