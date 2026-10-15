@@ -41,5 +41,5 @@ Layer0
 	g_flAnimationTimeOffset "0.000"
 	g_flAnimationTimePerFrame "0.100"
 	g_nNumAnimationCells "115"
-	g_vAnimationGrid "[9 11]"
+	g_vAnimationGrid "[11 11]"
 }
