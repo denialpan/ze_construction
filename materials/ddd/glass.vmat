@@ -12,7 +12,7 @@ Layer0
 	g_flTexCoordRotation "0.000"
 	g_nScaleTexCoordUByModelScaleAxis "0" // None
 	g_nScaleTexCoordVByModelScaleAxis "0" // None
-	g_vColorTint "[0.364706 0.364706 0.364706 0.000000]"
+	g_vColorTint "[0.239216 0.239216 0.239216 0.000000]"
 	g_vTexCoordCenter "[0.500 0.500]"
 	g_vTexCoordOffset "[0.000 0.000]"
 	g_vTexCoordScale "[1.000 1.000]"
@@ -32,4 +32,29 @@ Layer0
 	//---- Texture Address Mode ----
 	g_nTextureAddressModeU "0" // Wrap
 	g_nTextureAddressModeV "0" // Wrap
+
+
+	VariableState
+	{
+		"Ambient Occlusion"
+		{
+		}
+		"Color"
+		{
+		}
+		"Fog"
+		{
+		}
+		"Lighting"
+		{
+			"Roughness" 0
+			"Metalness" 0
+		}
+		"Normal Map"
+		{
+		}
+		"Texture Address Mode"
+		{
+		}
+	}
 }
