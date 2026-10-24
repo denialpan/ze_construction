@@ -22,9 +22,29 @@ Layer0
 	g_bFogEnabled "1"
 
 	//---- Texture ----
-	TextureCubeMap "materials/sky/galaxy_cubemap.png"
+	TextureCubeMap "materials/sky/cubemap.png"
 
 	//---- Texture Address Mode ----
 	g_nTextureAddressModeU "0" // Wrap
 	g_nTextureAddressModeV "0" // Wrap
+
+
+	VariableState
+	{
+		"Color"
+		{
+		}
+		"CubeParallax"
+		{
+		}
+		"Fog"
+		{
+		}
+		"Texture"
+		{
+		}
+		"Texture Address Mode"
+		{
+		}
+	}
 }
