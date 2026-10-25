@@ -165,6 +165,11 @@ function FailKeypad() {
     GenerateCode();
 }
 
+function ResetKeypadForRound() {
+    isKeypadComplete = false;
+    keypadEntry = "";
+}
+
 function PressDigit(digit) {
     if (isKeypadComplete) {
         return;
@@ -200,6 +205,7 @@ function PressDigit(digit) {
 }
 
 Instance.OnScriptInput("generate_code", GenerateCode);
+Instance.OnRoundStart(ResetKeypadForRound);
 Instance.SetThink(CodeRevealThink);
 
 for (const digit of KEYPAD_DIGITS) {

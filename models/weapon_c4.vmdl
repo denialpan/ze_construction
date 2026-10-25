@@ -1,0 +1,288 @@
+<!-- kv3 encoding:text:version{e21c7f3c-8a33-41c5-9977-a76d3a32aa0d} format:modeldoc41:version{12fc9d44-453a-4ae4-b4d9-7e2ac0bbd4e0} -->
+{
+	rootNode = 
+	{
+		_class = "RootNode"
+		children = 
+		[
+			{
+				_class = "BoneMarkupList"
+				bone_cull_type = "None"
+				primary_root_bone = ""
+			},
+			{
+				_class = "RenderMeshList"
+				children = 
+				[
+					{
+						_class = "RenderMeshFile"
+						name = "body_hd"
+						filename = "models/weapon_c4_body_hd.dmx"
+						import_scale = 1.0
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "RenderMeshFile"
+						name = "c4_screen"
+						filename = "models/weapon_c4_c4_screen1.dmx"
+						import_scale = 1.0
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+				]
+			},
+			{
+				_class = "AttachmentList"
+				children = 
+				[
+					{
+						_class = "Attachment"
+						name = "led"
+						parent_bone = "weapon_offset"
+						relative_origin = [ 0.187252, 4.156245, -2.181558 ]
+						relative_angles = [ -0.0, 0.0, 0.0 ]
+						weight = 1.0
+						ignore_rotation = false
+					},
+					{
+						_class = "Attachment"
+						name = "camera_inventory"
+						parent_bone = "weapon_offset"
+						relative_origin = [ -2.444605, -3.549887, 12.151032 ]
+						relative_angles = [ 65.20102, 75.67905, 65.862274 ]
+						weight = 1.0
+						ignore_rotation = false
+					},
+					{
+						_class = "Attachment"
+						name = "weapon_holster_center"
+						parent_bone = "weapon_offset"
+						relative_origin = [ -0.720634, 3.933332, -3.001115 ]
+						relative_angles = [ -0.0, 0.0, 0.0 ]
+						weight = 1.0
+						ignore_rotation = false
+					},
+					{
+						_class = "Attachment"
+						name = "nametag"
+						parent_bone = "weapon_offset"
+						relative_origin = [ 3.123652, 4.009158, -1.962605 ]
+						relative_angles = [ -0.0, 89.99999, 89.99999 ]
+						weight = 1.0
+						ignore_rotation = false
+					},
+					{
+						_class = "Attachment"
+						name = "defuse_cable_a"
+						parent_bone = "weapon_offset"
+						relative_origin = [ 2.725911, 5.879148, -2.2122 ]
+						relative_angles = [ -0.0, 0.0, 0.0 ]
+						weight = 1.0
+						ignore_rotation = false
+					},
+					{
+						_class = "Attachment"
+						name = "defuse_cable_b"
+						parent_bone = "weapon_offset"
+						relative_origin = [ 1.57696, 0.878157, -1.935043 ]
+						relative_angles = [ -0.0, 0.0, 0.0 ]
+						weight = 1.0
+						ignore_rotation = false
+					},
+					{
+						_class = "Attachment"
+						name = "keychain"
+						parent_bone = "weapon_offset"
+						relative_origin = [ 3.019212, 5.330413, -1.961047 ]
+						relative_angles = [ -0.0, 89.99999, 89.99999 ]
+						weight = 1.0
+						ignore_rotation = false
+					},
+					{
+						_class = "Attachment"
+						name = "led_viewmodel"
+						parent_bone = "weapon_offset"
+						relative_origin = [ 0.208582, 4.156245, -1.770089 ]
+						relative_angles = [ -0.0, 0.0, 0.0 ]
+						weight = 1.0
+						ignore_rotation = false
+					},
+				]
+			},
+			{
+				_class = "PhysicsShapeList"
+				children = 
+				[
+					{
+						_class = "PhysicsHullFile"
+						parent_bone = "weapon_offset"
+						surface_prop = "weaponc4"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 0.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/weapon_c4_hull.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+				]
+				leave_body_collision_unmodified = false
+				body_order = "default"
+			},
+			{
+				_class = "NmSkeletonList"
+				children = 
+				[
+					{
+						_class = "NmSkeletonReference"
+						filename = "animation/skeletons/weapons/c4.vnmskel"
+					},
+				]
+			},
+			{
+				_class = "GameDataList"
+				children = 
+				[
+					{
+						_class = "GenericGameData"
+						game_class = "prop_data"
+						game_keys = 
+						{
+							base = "Metal.Small"
+							allowstatic = false
+							bakelighting = true
+							damage_table = ""
+							dmg.bullets = -1.0
+							dmg.club = -1.0
+							dmg.explosive = -1.0
+							dmg.fire = -1.0
+							health = -1.0
+							spawn_motion_disabled = false
+						}
+					},
+					{
+						_class = "GenericGameData"
+						game_class = "weapon_metadata"
+						game_keys = 
+						{
+							is_unified_model = true
+							holster_attachment_preferred = "c4"
+							holster_attachment_fallback = "primary"
+							reloads_with_clips = true
+							magazine_model = resource:""
+							fire_sequence_name = ""
+							fire_sequence_name_2 = ""
+						}
+					},
+					{
+						_class = "GenericGameData"
+						game_class = "CPhysicsBodyGameMarkupData"
+						game_keys = 
+						{
+							m_PhysicsBodyMarkupByBoneName = 
+							{
+								weapon_offset = 
+								{
+									m_TargetBody = "weapon_offset"
+									m_Tag = ""
+								}
+							}
+						}
+					},
+				]
+			},
+			{
+				_class = "HitboxSetList"
+				children = 
+				[
+					{
+						_class = "HitboxSet"
+						name = "default"
+						children = 
+						[
+							{
+								_class = "Hitbox"
+								name = "weapon_offset"
+								parent_bone = "weapon_offset"
+								surface_property = "default"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -5.340765, 0.241735, -4.65201 ]
+								hitbox_maxs = [ 5.204375, 7.79128, -1.341316 ]
+							},
+						]
+					},
+				]
+			},
+			{
+				_class = "Skeleton"
+				children = 
+				[
+					{
+						_class = "Bone"
+						name = "weapon"
+						children = 
+						[
+							{
+								_class = "Bone"
+								name = "weapon_offset"
+								children = 
+								[
+									{
+										_class = "Bone"
+										name = "detonator_switch"
+										origin = [ 2.517414, 7.345856, -2.437639 ]
+										angles = [ -0.0, 0.0, 0.0 ]
+										do_not_discard = true
+									},
+									{
+										_class = "Bone"
+										name = "switch_cover"
+										origin = [ 3.169142, 7.709959, -2.427908 ]
+										angles = [ -0.0, 0.0, 0.0 ]
+										do_not_discard = true
+									},
+									{
+										_class = "Bone"
+										name = "ag1_hand_r"
+										origin = [ -2.803362, 0.000022, -3.049485 ]
+										angles = [ -0.0, 0.0, 0.0 ]
+										do_not_discard = true
+									},
+								]
+								origin = [ 0.0, 0.0, 0.0 ]
+								angles = [ 0.000052, -0.0, -0.000003 ]
+								do_not_discard = true
+							},
+						]
+						origin = [ -0.196637, -4.000021, 3.049482 ]
+						angles = [ -0.0, 0.0, 0.0 ]
+						do_not_discard = true
+					},
+				]
+			},
+		]
+		model_archetype = ""
+		primary_associated_entity = ""
+		document_sub_type = "ModelDocSubType_None"
+	}
+}
