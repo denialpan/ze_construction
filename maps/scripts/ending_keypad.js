@@ -1,21 +1,34 @@
-import { Entity, Instance } from "cs_script/point_script";
+import { Instance } from "cs_script/point_script";
 
 const MAX_DIGITS = 10;
 const CODE_REVEAL_DURATION = 5;
 const DIGIT_REVEAL_INTERVAL = CODE_REVEAL_DURATION / MAX_DIGITS;
 const ROLL_UPDATE_INTERVAL = 1 / 30;
+const GREEN_FLASH_DURATION = 0.1;
+const COLOR_FADE_DURATION = 1.5;
 const CODE_TEXT_ENTITY = "text_ending_keypad_code";
+const CODE_COLOR_RED = { r: 255, g: 0, b: 0, a: 255 };
+const CODE_COLOR_GREEN = { r: 0, g: 255, b: 0, a: 255 };
+const CODE_COLOR_BLACK = { r: 0, g: 0, b: 0, a: 255 };
+const REVEAL_PROGRESS_SOUND = "sound_ending_keypad_cooking";
 const REVEAL_COMPLETE_SOUND = "sound_ending_keypad_ding";
-const SUCCESS_SOUND = "snd.end";
-const ERROR_SOUND = "snd.hit";
+
+const KEYPAD_BUTTON_PREFIX = "keypad_ending_";
+const KEYPAD_DIGITS = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+const KEYPAD_PRESS_RELAY = "relay_keypad_ending_button_press";
+const KEYPAD_SUCCESS_RELAY = "relay_keypad_ending_button_correct";
+const KEYPAD_FAILURE_RELAY = "relay_keypad_ending_button_incorrect";
 
 let accessCode = "";
 let codeRevealStartTime = 0;
 let revealedDigitCount = 0;
 let isCodeRevealActive = false;
-let keypadLayout = null;
-const entriesBySlot = new Map();
-const failedSlots = new Set();
+let greenFlashEndTime = 0;
+let isGreenFlashActive = false;
+let colorFadeStartTime = 0;
+let isColorFadeActive = false;
+let keypadEntry = "";
+let isKeypadComplete = false;
 
 function SetCodeText(value) {
     Instance.EntFireAtName({
@@ -25,11 +38,19 @@ function SetCodeText(value) {
     });
 }
 
+function SetCodeColor(color) {
+    Instance.EntFireAtName({
+        name: CODE_TEXT_ENTITY,
+        input: "SetTextColor",
+        value: color
+    });
+}
+
 function GetRollingCodeText() {
     const revealedCode = accessCode.slice(0, revealedDigitCount);
     const rollingDigits = Array.from(
         { length: MAX_DIGITS - revealedDigitCount },
-        () => Math.floor(Math.random() * 10)
+        () => Math.floor(Math.random() * 9) + 1
     ).join("");
 
     return revealedCode + rollingDigits;
@@ -38,22 +59,67 @@ function GetRollingCodeText() {
 function GenerateCode() {
     accessCode = Array.from(
         { length: MAX_DIGITS },
-        () => Math.floor(Math.random() * 10)
+        () => Math.floor(Math.random() * 9) + 1
     ).join("");
 
     codeRevealStartTime = Instance.GetGameTime();
     revealedDigitCount = 0;
+    keypadEntry = "";
     isCodeRevealActive = true;
+    isGreenFlashActive = false;
+    isColorFadeActive = false;
+    Instance.EntFireAtName({
+        name: REVEAL_PROGRESS_SOUND,
+        input: "StopSound"
+    });
+    Instance.EntFireAtName({
+        name: REVEAL_PROGRESS_SOUND,
+        input: "PlaySound"
+    });
+    SetCodeColor(CODE_COLOR_RED);
     SetCodeText(GetRollingCodeText());
     Instance.SetNextThink(codeRevealStartTime + ROLL_UPDATE_INTERVAL);
 }
 
 function CodeRevealThink() {
+    const now = Instance.GetGameTime();
+
     if (!isCodeRevealActive) {
+        if (isGreenFlashActive) {
+            if (now < greenFlashEndTime) {
+                Instance.SetNextThink(greenFlashEndTime);
+                return;
+            }
+
+            isGreenFlashActive = false;
+            isColorFadeActive = true;
+            colorFadeStartTime = greenFlashEndTime;
+        }
+
+        if (!isColorFadeActive) {
+            return;
+        }
+
+        const fadeProgress = Math.min(
+            1,
+            Math.max(0, (now - colorFadeStartTime) / COLOR_FADE_DURATION)
+        );
+        const easedProgress = fadeProgress * fadeProgress * (3 - 2 * fadeProgress);
+        const green = Math.round(255 * (1 - easedProgress));
+
+        SetCodeColor({ r: 0, g: green, b: 0, a: 255 });
+
+        if (fadeProgress >= 1) {
+            SetCodeColor(CODE_COLOR_BLACK);
+            isColorFadeActive = false;
+            return;
+        }
+
+        Instance.SetNextThink(now + ROLL_UPDATE_INTERVAL);
         return;
     }
 
-    const elapsed = Instance.GetGameTime() - codeRevealStartTime;
+    const elapsed = now - codeRevealStartTime;
     const nextDigitCount = Math.min(
         MAX_DIGITS,
         Math.floor(elapsed / DIGIT_REVEAL_INTERVAL)
@@ -63,174 +129,79 @@ function CodeRevealThink() {
 
     if (revealedDigitCount >= MAX_DIGITS) {
         SetCodeText(accessCode);
+        SetCodeColor(CODE_COLOR_GREEN);
+        Instance.EntFireAtName({
+            name: REVEAL_PROGRESS_SOUND,
+            input: "StopSound"
+        });
         Instance.EntFireAtName({
             name: REVEAL_COMPLETE_SOUND,
             input: "PlaySound"
         });
         isCodeRevealActive = false;
+        isGreenFlashActive = true;
+        greenFlashEndTime = now + GREEN_FLASH_DURATION;
+        Instance.SetNextThink(greenFlashEndTime);
         return;
     }
 
     SetCodeText(GetRollingCodeText());
-    Instance.SetNextThink(Instance.GetGameTime() + ROLL_UPDATE_INTERVAL);
+    Instance.SetNextThink(now + ROLL_UPDATE_INTERVAL);
 }
 
-function GetKeypadLayout() {
-    if (!(keypadLayout instanceof Entity) || !keypadLayout.IsValid()) {
-        keypadLayout = Instance.FindEntitiesByName("hud_keypad")[0];
-    }
-    return keypadLayout;
+function FireRelay(name) {
+    Instance.EntFireAtName({ name, input: "Trigger" });
 }
 
-function GetPlayerController(entity) {
-    if (!entity) {
-        return undefined;
-    }
-
-    if (typeof entity.GetPlayerSlot === "function") {
-        return entity;
-    }
-
-    if (typeof entity.GetPlayerController === "function") {
-        return entity.GetPlayerController();
-    }
-
-    if (typeof entity.GetOriginalPlayerController === "function") {
-        return entity.GetOriginalPlayerController();
-    }
-
-    return undefined;
+function SubmitKeypad() {
+    isKeypadComplete = true;
+    FireRelay(KEYPAD_SUCCESS_RELAY);
+    keypadEntry = "";
 }
 
-function SetScreenState(playerSlot, stateClass) {
-    const layout = GetKeypadLayout();
-    if (!layout) {
+function FailKeypad() {
+    FireRelay(KEYPAD_FAILURE_RELAY);
+    keypadEntry = "";
+    GenerateCode();
+}
+
+function PressDigit(digit) {
+    if (isKeypadComplete) {
         return;
     }
 
-    layout.SetHasClassForPlayer(playerSlot, "screen", "ScreenReady", stateClass === "ScreenReady");
-    layout.SetHasClassForPlayer(playerSlot, "screen", "ScreenError", stateClass === "ScreenError");
-}
+    FireRelay(KEYPAD_PRESS_RELAY);
 
-function SetPreview(playerSlot, value) {
-    const layout = GetKeypadLayout();
-    if (!layout) {
+    if (isCodeRevealActive) {
+        GenerateCode();
         return;
     }
 
-    layout.SetDialogVariableStringForPlayer(playerSlot, "preview_text", "digits", "*".repeat(value.length));
-}
-
-function ResetEntry(playerSlot) {
-    entriesBySlot.set(playerSlot, "");
-    failedSlots.delete(playerSlot);
-    SetPreview(playerSlot, "");
-    SetScreenState(playerSlot, undefined);
-}
-
-function ShowKeypad(playerSlot) {
-    const layout = GetKeypadLayout();
-    if (!layout) {
-        Instance.Msg("ending_keypad.js: missing custom_hud_layout named hud_keypad");
+    if (!accessCode) {
+        Instance.Msg("ending_keypad.js: generate_code must be called before entering digits");
         return;
     }
 
-    ResetEntry(playerSlot);
-    layout.SetHasClassForPlayer(playerSlot, "keypad", "Dismissed", false);
-    layout.SetInputCaptureEnabled(playerSlot, true);
-}
+    if (keypadEntry.length >= accessCode.length) {
+        keypadEntry = "";
+    }
 
-function HideKeypad(playerSlot) {
-    const layout = GetKeypadLayout();
-    if (!layout) {
+    const expectedDigit = accessCode[keypadEntry.length];
+    if (digit !== expectedDigit) {
+        FailKeypad();
         return;
     }
 
-    ResetEntry(playerSlot);
-    layout.SetHasClassForPlayer(playerSlot, "keypad", "Dismissed", true);
-    layout.SetInputCaptureEnabled(playerSlot, false);
-}
+    keypadEntry += digit;
 
-function HideAllKeypads() {
-    for (const player of Instance.GetAllPlayerControllers()) {
-        if (player && player.IsConnected()) {
-            HideKeypad(player.GetPlayerSlot());
-        }
-    }
-}
-
-function DisableKeypadButton() {
-    Instance.EntFireAtName({ name: "button_keypad", input: "Disable" });
-}
-
-function PlaySound(soundName) {
-    Instance.EntFireAtName({ name: soundName, input: "StartSound" });
-}
-
-function PressDigit(playerSlot, digit) {
-    let currentEntry = entriesBySlot.get(playerSlot) || "";
-
-    if (failedSlots.has(playerSlot)) {
-        currentEntry = "";
-        entriesBySlot.set(playerSlot, "");
-        failedSlots.delete(playerSlot);
-        SetScreenState(playerSlot, undefined);
-    }
-
-    if (currentEntry.length >= MAX_DIGITS) {
-        return;
-    }
-
-    const nextEntry = currentEntry + digit;
-    entriesBySlot.set(playerSlot, nextEntry);
-    SetPreview(playerSlot, nextEntry);
-    SetScreenState(playerSlot, undefined);
-
-    if (nextEntry.length === MAX_DIGITS) {
-        const wasCorrect = nextEntry === accessCode;
-        SetScreenState(playerSlot, wasCorrect ? "ScreenReady" : "ScreenError");
-        if (wasCorrect) {
-            PlaySound(SUCCESS_SOUND);
-            DisableKeypadButton();
-            HideAllKeypads();
-        } else {
-            PlaySound(ERROR_SOUND);
-            failedSlots.add(playerSlot);
-        }
+    if (keypadEntry.length >= accessCode.length) {
+        SubmitKeypad();
     }
 }
 
 Instance.OnScriptInput("generate_code", GenerateCode);
 Instance.SetThink(CodeRevealThink);
 
-Instance.OnScriptInput("ShowKeypad", ({ activator, caller }) => {
-    const player = GetPlayerController(activator) || GetPlayerController(caller);
-    if (!player) {
-        Instance.Msg("ending_keypad.js: ShowKeypad needs a player activator or caller");
-        return;
-    }
-
-    ShowKeypad(player.GetPlayerSlot());
-});
-
-Instance.OnCustomHudClicked((event) => {
-    if (event.layout !== GetKeypadLayout()) {
-        return;
-    }
-
-    const playerSlot = event.player.GetPlayerSlot();
-
-    if (event.buttonId === "close_keypad_button") {
-        HideKeypad(playerSlot);
-        return;
-    }
-
-    if (event.buttonId === "clear_keypad_button") {
-        ResetEntry(playerSlot);
-        return;
-    }
-
-    if (event.buttonId.startsWith("keypad_digit_")) {
-        PressDigit(playerSlot, event.buttonId.slice("keypad_digit_".length));
-    }
-});
+for (const digit of KEYPAD_DIGITS) {
+    Instance.OnScriptInput(`${KEYPAD_BUTTON_PREFIX}${digit}`, () => PressDigit(digit));
+}

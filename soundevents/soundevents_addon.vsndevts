@@ -401,19 +401,32 @@
 	d3.keypad_ending_cooked_ding = 
     {
         type = "csgo_mega"
-        volume = 2
+        volume = 4
         pitch = 1.000000
+        mixgroup = "Ambient"
 		vsnd_files_track_01 = "sounds/keypad_ending_cooked_ding.vsnd"
-		restrict_source_reverb = true
-		disable_volume_culling = true
-		position_relative_to_player = true
-        use_distance_unfiltered_stereo_mapping_curve = true
-        distance_unfiltered_stereo_mapping_curve = 
+		use_distance_unfiltered_stereo_mapping_curve = true
+		use_distance_volume_mapping_curve = true
+		distance_volume_mapping_curve = 
         [
-            [
-                0, 1, 0, 0,
-                0, 0,
-            ],
+            [ 0.0, 1.0, 0.0, 0.0, 2.0, 3.0, ],
+            [512.0, 0.0, 0.0, 0.0, 2.0, 3.0, ]
+        ]
+    }
+	
+	d3.keypad_ending_cooking = 
+    {
+        type = "csgo_mega"
+        volume = 4
+        pitch = 1.000000
+        mixgroup = "Ambient"
+		vsnd_files_track_01 = "sounds/keypad_ending_cooking.vsnd"
+		use_distance_unfiltered_stereo_mapping_curve = true
+		use_distance_volume_mapping_curve = true
+		distance_volume_mapping_curve = 
+        [
+            [ 0.0, 1.0, 0.0, 0.0, 2.0, 3.0, ],
+            [512.0, 0.0, 0.0, 0.0, 2.0, 3.0, ]
         ]
     }
 
