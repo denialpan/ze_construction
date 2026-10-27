@@ -9,7 +9,7 @@ const COLOR_FADE_DURATION = 1.5;
 const CODE_TEXT_ENTITY = "text_ending_keypad_code";
 const CODE_COLOR_RED = { r: 255, g: 0, b: 0, a: 255 };
 const CODE_COLOR_GREEN = { r: 0, g: 255, b: 0, a: 255 };
-const CODE_COLOR_BLACK = { r: 0, g: 0, b: 0, a: 255 };
+const CODE_COLOR_YELLOW = { r: 252, g: 186, b: 3, a: 255 };
 const REVEAL_PROGRESS_SOUND = "sound_ending_keypad_cooking";
 const REVEAL_COMPLETE_SOUND = "sound_ending_keypad_ding";
 
@@ -28,7 +28,7 @@ let isGreenFlashActive = false;
 let colorFadeStartTime = 0;
 let isColorFadeActive = false;
 let keypadEntry = "";
-let isKeypadComplete = false;
+let isKeypadFailed = false;
 
 function SetCodeText(value) {
     Instance.EntFireAtName({
@@ -65,6 +65,7 @@ function GenerateCode() {
     codeRevealStartTime = Instance.GetGameTime();
     revealedDigitCount = 0;
     keypadEntry = "";
+    isKeypadFailed = false;
     isCodeRevealActive = true;
     isGreenFlashActive = false;
     isColorFadeActive = false;
@@ -105,12 +106,16 @@ function CodeRevealThink() {
             Math.max(0, (now - colorFadeStartTime) / COLOR_FADE_DURATION)
         );
         const easedProgress = fadeProgress * fadeProgress * (3 - 2 * fadeProgress);
-        const green = Math.round(255 * (1 - easedProgress));
 
-        SetCodeColor({ r: 0, g: green, b: 0, a: 255 });
+        SetCodeColor({
+            r: Math.round(CODE_COLOR_GREEN.r + (CODE_COLOR_YELLOW.r - CODE_COLOR_GREEN.r) * easedProgress),
+            g: Math.round(CODE_COLOR_GREEN.g + (CODE_COLOR_YELLOW.g - CODE_COLOR_GREEN.g) * easedProgress),
+            b: Math.round(CODE_COLOR_GREEN.b + (CODE_COLOR_YELLOW.b - CODE_COLOR_GREEN.b) * easedProgress),
+            a: Math.round(CODE_COLOR_GREEN.a + (CODE_COLOR_YELLOW.a - CODE_COLOR_GREEN.a) * easedProgress)
+        });
 
         if (fadeProgress >= 1) {
-            SetCodeColor(CODE_COLOR_BLACK);
+            SetCodeColor(CODE_COLOR_YELLOW);
             isColorFadeActive = false;
             return;
         }
@@ -154,7 +159,6 @@ function FireRelay(name) {
 }
 
 function SubmitKeypad() {
-    isKeypadComplete = true;
     FireRelay(KEYPAD_SUCCESS_RELAY);
     keypadEntry = "";
 }
@@ -162,19 +166,15 @@ function SubmitKeypad() {
 function FailKeypad() {
     FireRelay(KEYPAD_FAILURE_RELAY);
     keypadEntry = "";
-    GenerateCode();
+    isKeypadFailed = true;
 }
 
 function ResetKeypadForRound() {
-    isKeypadComplete = false;
+    isKeypadFailed = false;
     keypadEntry = "";
 }
 
 function PressDigit(digit) {
-    if (isKeypadComplete) {
-        return;
-    }
-
     FireRelay(KEYPAD_PRESS_RELAY);
 
     if (isCodeRevealActive) {
@@ -184,6 +184,11 @@ function PressDigit(digit) {
 
     if (!accessCode) {
         Instance.Msg("ending_keypad.js: generate_code must be called before entering digits");
+        return;
+    }
+
+    if (isKeypadFailed) {
+        FailKeypad();
         return;
     }
 
