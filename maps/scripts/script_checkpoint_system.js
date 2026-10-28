@@ -35,6 +35,7 @@ const CHAT_COLOR_PREFIX = "\x03";
 const JUMP_TRACK_WINDOW = 5;
 const JUMP_POSITION_POLL_INTERVAL = 0.01;
 const AVERAGE_CHAT_SUCCESS_MARKS = new Set([5, 10, 15, 20, 30, 40, 50]);
+const NORMAL_KZ_KILL_SUCCESS_COUNT = 40;
 
 const progressByRun = new Map();
 const timerByRun = new Map();
@@ -262,6 +263,29 @@ function FireSuccessRelay(config, player, successCount) {
     FireRelay(`${config.successRelayPrefix}${successCount}`, player);
 }
 
+function HandleNormalKzSuccess(player, successCount) {
+    if (successCount !== NORMAL_KZ_KILL_SUCCESS_COUNT) {
+        return;
+    }
+
+    const completingPlayerSlot = player.GetPlayerSlot();
+
+    for (const otherPlayer of Instance.GetAllPlayerControllers()) {
+        if (
+            !otherPlayer ||
+            !otherPlayer.IsConnected() ||
+            otherPlayer.GetPlayerSlot() === completingPlayerSlot
+        ) {
+            continue;
+        }
+
+        const pawn = GetPlayerPawn(otherPlayer);
+        if (pawn && pawn.IsAlive()) {
+            pawn.Kill();
+        }
+    }
+}
+
 function GetPawnPosition(pawn) {
     if (!pawn || typeof pawn.GetAbsOrigin !== "function") {
         return undefined;
@@ -438,6 +462,9 @@ function CompleteCheckpointSystem(systemId, config, player) {
     Instance.Msg(`script_checkpoint_system.js: player ${playerSlot} completed ${systemId} success_${success.count} in ${FormatTime(elapsed)}`);
     PrintSuccessChat(player, success.count, jumpDistance, success.averageDistance);
     FireSuccessRelay(config, player, success.count);
+    if (systemId === "normal_kz") {
+        HandleNormalKzSuccess(player, success.count);
+    }
     ResetJumpTracking(runKey);
 }
 
