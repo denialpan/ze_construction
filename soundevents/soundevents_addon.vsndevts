@@ -430,4 +430,42 @@
         ]
     }
 
+	d3.kz_40_success_rise = 
+    {
+        type = "csgo_mega"
+        volume = 4
+        pitch = 1.000000
+        vsnd_files_track_01 = "sounds/kz_40_success_rise.vsnd"
+        restrict_source_reverb = true
+		disable_volume_culling = true
+		position_relative_to_player = true
+        use_distance_unfiltered_stereo_mapping_curve = true
+        distance_unfiltered_stereo_mapping_curve = 
+        [
+            [
+                0, 1, 0, 0,
+                0, 0,
+            ],
+        ]
+    }
+	
+	d3.kz_50_success_ambience = 
+    {
+        type = "csgo_mega"
+        volume = 4
+        pitch = 1.000000
+        vsnd_files_track_01 = "sounds/kz_50_success_ambience.vsnd"
+        restrict_source_reverb = true
+		disable_volume_culling = true
+		position_relative_to_player = true
+        use_distance_unfiltered_stereo_mapping_curve = true
+        distance_unfiltered_stereo_mapping_curve = 
+        [
+            [
+                0, 1, 0, 0,
+                0, 0,
+            ],
+        ]
+    }
+
 }
