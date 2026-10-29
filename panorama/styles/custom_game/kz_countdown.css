@@ -1,0 +1,71 @@
+.Root {
+    width: 100%;
+    height: 100%;
+}
+
+#kz_countdown {
+    width: 260px;
+    height: 64px;
+    horizontal-align: center;
+    vertical-align: bottom;
+    margin-bottom: 180px;
+
+    transition-property: opacity, transform;
+    transition-duration: .12s;
+    transition-timing-function: ease-out;
+    opacity: 1;
+    transform: translateY(0px);
+
+    &.Dismissed {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+}
+
+#kz_countdown_text {
+    width: 100%;
+    height: 100%;
+    horizontal-align: left;
+    vertical-align: center;
+    text-align: center;
+    font-family: notomono;
+    font-size: 32px;
+    color: #000000;
+	text-shadow: 0px 1px 4px 2.0 #000000dd;
+}
+
+@keyframes 'KzPulseEven'
+{
+    0% {
+        color: #ff0000;
+    }
+
+    100% {
+        color: #6e0202;
+    }
+}
+
+@keyframes 'KzPulseOdd'
+{
+    0% {
+        color: #ff0000;
+    }
+
+    100% {
+        color: #6e0202;
+    }
+}
+
+#kz_countdown.PulseEven #kz_countdown_text {
+    animation-name: KzPulseEven;
+    animation-duration: 1s;
+    animation-timing-function: linear;
+    animation-iteration-count: 1;
+}
+
+#kz_countdown.PulseOdd #kz_countdown_text {
+    animation-name: KzPulseOdd;
+    animation-duration: 1s;
+    animation-timing-function: linear;
+    animation-iteration-count: 1;
+}

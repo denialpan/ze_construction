@@ -28,7 +28,13 @@ const CHECKPOINT_CONFIGS = {
 
 const HUD_NAME = "hud_script_checkpoint_system";
 const HUD_PANEL_ID = "script_checkpoint_timer";
-const HUD_UPDATE_INTERVAL = 1 / 100;
+const HUD_UPDATE_INTERVAL = 1 / 50;
+const KZ_COUNTDOWN_HUD_NAME = "hud_kz_countdown";
+const KZ_COUNTDOWN_PANEL_ID = "kz_countdown";
+const KZ_COUNTDOWN_LABEL_ID = "kz_countdown_text";
+const KZ_COUNTDOWN_DIALOG_VARIABLE = "kz_countdown_time";
+const KZ_COUNTDOWN_DURATION = 45;
+const KZ_COUNTDOWN_UPDATE_INTERVAL = 1 / 50;
 const FAILURE_HOLD_TIME = 2;
 const SUCCESS_HOLD_TIME = 10;
 const CHAT_COLOR_PREFIX = "\x03";
@@ -36,6 +42,7 @@ const JUMP_TRACK_WINDOW = 5;
 const JUMP_POSITION_POLL_INTERVAL = 0.01;
 const AVERAGE_CHAT_SUCCESS_MARKS = new Set([5, 10, 15, 20, 30, 40, 50]);
 const NORMAL_KZ_KILL_SUCCESS_COUNT = 40;
+const NORMAL_KZ_COUNTDOWN_SUCCESS_COUNT = 2;
 
 const progressByRun = new Map();
 const timerByRun = new Map();
@@ -46,6 +53,9 @@ const jumpStartByRun = new Map();
 const jumpDistanceByRun = new Map();
 const completionPendingByRun = new Set();
 let checkpointHud = null;
+let kzCountdownHud = null;
+let kzCountdownState = null;
+let kzCountdownPulseClass = null;
 
 function GetPlayerController(entity) {
     if (!entity) {
@@ -130,6 +140,87 @@ function SetTimerState(playerSlot, stateClass) {
 
     layout.SetHasClassForPlayer(playerSlot, HUD_PANEL_ID, "TimerFailure", stateClass === "TimerFailure");
     layout.SetHasClassForPlayer(playerSlot, HUD_PANEL_ID, "TimerSuccess", stateClass === "TimerSuccess");
+}
+
+function GetKzCountdownHud() {
+    if (!(kzCountdownHud instanceof Entity) || !kzCountdownHud.IsValid()) {
+        kzCountdownHud = Instance.FindEntitiesByName(KZ_COUNTDOWN_HUD_NAME)[0];
+        kzCountdownPulseClass = null;
+    }
+    return kzCountdownHud;
+}
+
+function TriggerKzCountdownPulse() {
+    const layout = GetKzCountdownHud();
+    if (!layout) {
+        return;
+    }
+
+    const nextPulseClass = kzCountdownPulseClass === "PulseEven" ? "PulseOdd" : "PulseEven";
+    if (kzCountdownPulseClass) {
+        layout.SetHasClass(KZ_COUNTDOWN_PANEL_ID, kzCountdownPulseClass, false);
+    }
+    layout.SetHasClass(KZ_COUNTDOWN_PANEL_ID, nextPulseClass, true);
+    kzCountdownPulseClass = nextPulseClass;
+}
+
+function UpdateKzCountdownHud(seconds) {
+    const layout = GetKzCountdownHud();
+    if (!layout) {
+        return;
+    }
+
+    const text = FormatTime(seconds);
+
+    for (const player of Instance.GetAllPlayerControllers()) {
+        if (!player || !player.IsConnected()) {
+            continue;
+        }
+
+        const playerSlot = player.GetPlayerSlot();
+        layout.SetDialogVariableStringForPlayer(
+            playerSlot,
+            KZ_COUNTDOWN_LABEL_ID,
+            KZ_COUNTDOWN_DIALOG_VARIABLE,
+            text
+        );
+        layout.SetHasClassForPlayer(playerSlot, KZ_COUNTDOWN_PANEL_ID, "Dismissed", false);
+    }
+}
+
+function HideKzCountdownHud() {
+    const layout = GetKzCountdownHud();
+    if (!layout) {
+        return;
+    }
+
+    for (const player of Instance.GetAllPlayerControllers()) {
+        if (player && player.IsConnected()) {
+            layout.SetHasClassForPlayer(
+                player.GetPlayerSlot(),
+                KZ_COUNTDOWN_PANEL_ID,
+                "Dismissed",
+                true
+            );
+        }
+    }
+}
+
+function StartKzCountdown() {
+    if (!GetKzCountdownHud()) {
+        Instance.Msg(`script_checkpoint_system.js: missing custom_hud_layout named ${KZ_COUNTDOWN_HUD_NAME}`);
+        return;
+    }
+
+    const now = Instance.GetGameTime();
+    kzCountdownState = {
+        endTime: now + KZ_COUNTDOWN_DURATION,
+        nextUpdate: now,
+        displayedSecond: Math.ceil(KZ_COUNTDOWN_DURATION)
+    };
+    TriggerKzCountdownPulse();
+    UpdateKzCountdownHud(KZ_COUNTDOWN_DURATION);
+    Instance.SetNextThink(now);
 }
 
 function GetRunKey(systemId, playerSlot) {
@@ -264,25 +355,27 @@ function FireSuccessRelay(config, player, successCount) {
 }
 
 function HandleNormalKzSuccess(player, successCount) {
-    if (successCount !== NORMAL_KZ_KILL_SUCCESS_COUNT) {
-        return;
+    if (successCount === NORMAL_KZ_KILL_SUCCESS_COUNT) {
+        const completingPlayerSlot = player.GetPlayerSlot();
+
+        for (const otherPlayer of Instance.GetAllPlayerControllers()) {
+            if (
+                !otherPlayer ||
+                !otherPlayer.IsConnected() ||
+                otherPlayer.GetPlayerSlot() === completingPlayerSlot
+            ) {
+                continue;
+            }
+
+            const pawn = GetPlayerPawn(otherPlayer);
+            if (pawn && pawn.IsAlive()) {
+                pawn.Kill();
+            }
+        }
     }
 
-    const completingPlayerSlot = player.GetPlayerSlot();
-
-    for (const otherPlayer of Instance.GetAllPlayerControllers()) {
-        if (
-            !otherPlayer ||
-            !otherPlayer.IsConnected() ||
-            otherPlayer.GetPlayerSlot() === completingPlayerSlot
-        ) {
-            continue;
-        }
-
-        const pawn = GetPlayerPawn(otherPlayer);
-        if (pawn && pawn.IsAlive()) {
-            pawn.Kill();
-        }
+    if (successCount === NORMAL_KZ_COUNTDOWN_SUCCESS_COUNT) {
+        StartKzCountdown();
     }
 }
 
@@ -672,6 +765,28 @@ function TimerThink() {
                 }
                 state.nextPositionPoll = now + JUMP_POSITION_POLL_INTERVAL;
             }
+            needsNextThink = true;
+        }
+    }
+
+    if (kzCountdownState) {
+        const remaining = Math.max(0, kzCountdownState.endTime - now);
+        const displayedSecond = Math.ceil(remaining);
+
+        if (displayedSecond !== kzCountdownState.displayedSecond) {
+            kzCountdownState.displayedSecond = displayedSecond;
+            TriggerKzCountdownPulse();
+        }
+
+        if (now >= kzCountdownState.nextUpdate || remaining <= 0) {
+            UpdateKzCountdownHud(remaining);
+            kzCountdownState.nextUpdate = now + KZ_COUNTDOWN_UPDATE_INTERVAL;
+        }
+
+        if (remaining <= 0) {
+            HideKzCountdownHud();
+            kzCountdownState = null;
+        } else {
             needsNextThink = true;
         }
     }

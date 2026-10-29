@@ -1,0 +1,11 @@
+<root>
+    <styles>
+        <include src="file://{resources}/styles/custom_game/kz_countdown.css" />
+    </styles>
+
+    <Panel class="Root">
+        <Panel id="kz_countdown" class="Dismissed">
+            <Label id="kz_countdown_text" text="{s:kz_countdown_time}" />
+        </Panel>
+    </Panel>
+</root>
