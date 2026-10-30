@@ -212,6 +212,33 @@ function HideKzCountdownHud() {
     }
 }
 
+function ClearKzCountdownHud() {
+    const layout = GetKzCountdownHud();
+    if (layout) {
+        if (kzCountdownPulseClass) {
+            layout.SetHasClass(KZ_COUNTDOWN_PANEL_ID, kzCountdownPulseClass, false);
+        }
+
+        for (const player of Instance.GetAllPlayerControllers()) {
+            if (!player || !player.IsConnected()) {
+                continue;
+            }
+
+            const playerSlot = player.GetPlayerSlot();
+            layout.SetDialogVariableStringForPlayer(
+                playerSlot,
+                KZ_COUNTDOWN_LABEL_ID,
+                KZ_COUNTDOWN_DIALOG_VARIABLE,
+                ""
+            );
+        }
+    }
+
+    HideKzCountdownHud();
+    kzCountdownState = null;
+    kzCountdownPulseClass = null;
+}
+
 function StartKzCountdown(player) {
     if (!GetKzCountdownHud()) {
         Instance.Msg(`script_checkpoint_system.js: missing custom_hud_layout named ${KZ_COUNTDOWN_HUD_NAME}`);
@@ -817,8 +844,7 @@ function TimerThink() {
 
         if (remaining <= 0) {
             const countdownPlayer = kzCountdownState.player;
-            HideKzCountdownHud();
-            kzCountdownState = null;
+            ClearKzCountdownHud();
 
             Instance.EntFireAtName({
                 name: NORMAL_KZ_SUCCESS_40_RISE_SOUND,
@@ -897,6 +923,20 @@ Instance.OnPlayerJump((event) => {
 
 Instance.OnPlayerLand((event) => {
     TrackPlayerLand(event.player);
+});
+
+Instance.OnPlayerKill((event) => {
+    if (!kzCountdownState) {
+        return;
+    }
+
+    const killedPlayer = GetPlayerController(event.player);
+    if (
+        killedPlayer &&
+        killedPlayer.GetPlayerSlot() === kzCountdownState.player.GetPlayerSlot()
+    ) {
+        ClearKzCountdownHud();
+    }
 });
 
 Instance.OnActivate(ResetAllCheckpointState);
