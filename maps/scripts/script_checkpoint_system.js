@@ -33,7 +33,8 @@ const KZ_COUNTDOWN_HUD_NAME = "hud_kz_countdown";
 const KZ_COUNTDOWN_PANEL_ID = "kz_countdown";
 const KZ_COUNTDOWN_LABEL_ID = "kz_countdown_text";
 const KZ_COUNTDOWN_DIALOG_VARIABLE = "kz_countdown_time";
-const KZ_COUNTDOWN_DURATION = 40;
+const KZ_COUNTDOWN_DURATION = 4;
+const ROUND_RESTART_DELAY = 5;
 const FAILURE_HOLD_TIME = 2;
 const SUCCESS_HOLD_TIME = 10;
 const CHAT_COLOR_PREFIX = "\x03";
@@ -92,6 +93,10 @@ function FireRelay(name, player) {
 
 function Say(message) {
     Instance.ServerCommand(`say ${message}`);
+}
+
+function RestartRound() {
+    Instance.ServerCommand(`mp_restartgame ${ROUND_RESTART_DELAY}`);
 }
 
 function GetCheckpointHud() {
@@ -207,7 +212,7 @@ function HideKzCountdownHud() {
     }
 }
 
-function StartKzCountdown() {
+function StartKzCountdown(player) {
     if (!GetKzCountdownHud()) {
         Instance.Msg(`script_checkpoint_system.js: missing custom_hud_layout named ${KZ_COUNTDOWN_HUD_NAME}`);
         return;
@@ -215,6 +220,7 @@ function StartKzCountdown() {
 
     const now = Instance.GetGameTime();
     kzCountdownState = {
+        player,
         endTime: now + KZ_COUNTDOWN_DURATION,
         nextUpdate: now,
         displayedSecond: Math.ceil(KZ_COUNTDOWN_DURATION)
@@ -376,7 +382,7 @@ function HandleNormalKzSuccess(player, successCount) {
     }
 
     if (successCount === NORMAL_KZ_COUNTDOWN_SUCCESS_COUNT) {
-        StartKzCountdown();
+        StartKzCountdown(player);
     }
 }
 
@@ -397,7 +403,7 @@ function HandleNormalKzFailure(player, successCount) {
             input: "PlaySound"
         });
         pawn.Kill();
-        Instance.ServerCommand("mp_restartgame 1");
+        RestartRound();
     }
 }
 
@@ -810,8 +816,15 @@ function TimerThink() {
         }
 
         if (remaining <= 0) {
+            const countdownPlayer = kzCountdownState.player;
             HideKzCountdownHud();
             kzCountdownState = null;
+
+            const pawn = GetPlayerPawn(countdownPlayer);
+            if (pawn && pawn.IsAlive()) {
+                pawn.Kill();
+            }
+            RestartRound();
         } else {
             needsNextThink = true;
         }
