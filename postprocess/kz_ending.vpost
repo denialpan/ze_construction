@@ -1,0 +1,108 @@
+<!-- kv3 encoding:text:version{e21c7f3c-8a33-41c5-9977-a76d3a32aa0d} format:generic:version{7412167c-06e9-4698-aff2-e63eb59037e7} -->
+{
+	_class = "CPostProcessData"
+	m_layers = 
+	[
+		{
+			_class = "CCurvesColorCorrectionLayer"
+			m_name = "Curves 1"
+			m_nOpacityPercent = 100
+			m_bVisible = true
+			m_pLayerMask = null
+			m_curvePointsRGB = 
+			[
+				[ 0.0, 0.0 ],
+				[ 143.0, 218.0 ],
+				[ 255.0, 255.0 ],
+			]
+			m_curvePointsR = 
+			[
+				[ 0.0, 0.0 ],
+				[ 255.0, 255.0 ],
+			]
+			m_curvePointsG = 
+			[
+				[ 0.0, 0.0 ],
+				[ 255.0, 255.0 ],
+			]
+			m_curvePointsB = 
+			[
+				[ 0.0, 0.0 ],
+				[ 255.0, 255.0 ],
+			]
+		},
+		{
+			_class = "CVibranceColorCorrectionLayer"
+			m_name = "Saturation/Vibrance 1"
+			m_nOpacityPercent = 100
+			m_bVisible = true
+			m_pLayerMask = null
+			m_nVibrance = 100
+			m_nSaturation = 20
+		},
+		{
+			_class = "CColorTintColorCorrectionLayer"
+			m_name = "Color Tint 1"
+			m_nOpacityPercent = 100
+			m_bVisible = true
+			m_pLayerMask = null
+			m_nTintColorR = 255
+			m_nTintColorG = 0
+			m_nTintColorB = 0
+			m_nStrength = 100
+			m_bPreserveLuminosity = false
+		},
+		{
+			_class = "CVignetteLayer"
+			m_name = "Vignette 1"
+			m_nOpacityPercent = 100
+			m_bVisible = true
+			m_pLayerMask = null
+			m_params = 
+			{
+				m_flVignetteStrength = -0.889
+				m_vCenter = [ 0.0, 0.0 ]
+				m_flRadius = 0.16679999
+				m_flRoundness = 1.0
+				m_flFeather = 0.5726
+				m_vColorTint = [ 1.0, 1.0, 1.0 ]
+			}
+		},
+		{
+			_class = "CLevelsColorCorrectionLayer"
+			m_name = "Levels 1"
+			m_nOpacityPercent = 100
+			m_bVisible = true
+			m_pLayerMask = null
+			m_nInputBlackPointRGB = 67
+			m_nInputBlackPointR = 0
+			m_nInputBlackPointG = 0
+			m_nInputBlackPointB = 0
+			m_nInputWhitePointRGB = 137
+			m_nInputWhitePointR = 255
+			m_nInputWhitePointG = 255
+			m_nInputWhitePointB = 255
+			m_nOutputBlackPointRGB = 0
+			m_nOutputBlackPointR = 0
+			m_nOutputBlackPointG = 0
+			m_nOutputBlackPointB = 0
+			m_nOutputWhitePointRGB = 219
+			m_nOutputWhitePointR = 255
+			m_nOutputWhitePointG = 255
+			m_nOutputWhitePointB = 255
+			m_flGammaRGB = 1.0
+			m_flGammaR = 1.0
+			m_flGammaG = 1.0
+			m_flGammaB = 1.0
+		},
+		{
+			_class = "CBrightnessContrastColorCorrectionLayer"
+			m_name = "Brightness/Contrast 1"
+			m_nOpacityPercent = 100
+			m_bVisible = true
+			m_pLayerMask = null
+			m_nBrightness = 42
+			m_nContrast = 100
+		},
+	]
+}
