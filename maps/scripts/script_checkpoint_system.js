@@ -21,7 +21,7 @@ const CHECKPOINT_CONFIGS = {
         failureResetInput: "normal_kz_failure_reset",
         showTimer: false,
         timerLimit: 0,
-        consecutiveSuccesses: 50,
+        consecutiveSuccesses: 3,
 		conflicts: []
     }
 };
@@ -45,6 +45,9 @@ const NORMAL_KZ_KILL_SUCCESS_COUNT = 2;
 const NORMAL_KZ_COUNTDOWN_SUCCESS_COUNT = 2;
 const NORMAL_KZ_SUCCESS_40_RISE_SOUND = "sound_normal_kz_success_40_rise";
 const NORMAL_KZ_FAILURE_KILL_SOUND = "sound_normal_kz_failure_kill_awp";
+const ITEMS_SCRIPT_ENTITY_NAME = "script_items";
+const RESET_SNIPER_LASER_INPUT = "reset_sniper_laser";
+const KZ_HELICOPTER_ENTITY_NAME = "train_kz_helicopter";
 
 const progressByRun = new Map();
 const timerByRun = new Map();
@@ -388,7 +391,27 @@ function FireSuccessRelay(config, player, successCount) {
     FireRelay(`${config.successRelayPrefix}${successCount}`, player);
 }
 
-function HandleNormalKzSuccess(player, successCount) {
+function HandleNormalKzSuccess(player, successCount, config) {
+    const requiredSuccesses = Math.max(1, config.consecutiveSuccesses || 1);
+    if (successCount >= requiredSuccesses) {
+        Instance.EntFireAtName({
+            name: NORMAL_KZ_SUCCESS_40_RISE_SOUND,
+            input: "StopSound"
+        });
+        Instance.EntFireAtName({
+            name: ITEMS_SCRIPT_ENTITY_NAME,
+            input: "RunScriptInput",
+            value: RESET_SNIPER_LASER_INPUT
+        });
+        Instance.EntFireAtName({
+            name: KZ_HELICOPTER_ENTITY_NAME,
+            input: "SetSpeed",
+            value: 0
+        });
+        ClearKzCountdownHud();
+        return;
+    }
+
     if (successCount === NORMAL_KZ_KILL_SUCCESS_COUNT) {
         const completingPlayerSlot = player.GetPlayerSlot();
 
@@ -615,7 +638,7 @@ function CompleteCheckpointSystem(systemId, config, player) {
     PrintSuccessChat(player, success.count, jumpDistance, success.averageDistance);
     FireSuccessRelay(config, player, success.count);
     if (systemId === "normal_kz") {
-        HandleNormalKzSuccess(player, success.count);
+        HandleNormalKzSuccess(player, success.count, config);
     }
     ResetJumpTracking(runKey);
 }

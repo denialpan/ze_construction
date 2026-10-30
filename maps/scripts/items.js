@@ -19,6 +19,7 @@ let helicopterLaserParent = undefined;
 let helicopterLaserTarget = undefined;
 let helicopterLaserAngles = undefined;
 let helicopterLaserLastUpdateTime = 0;
+let sniperLaserLockedAtDefault = false;
 
 function GetPlayerController(entity) {
     if (!entity) {
@@ -104,7 +105,7 @@ function DescribeWeapon(weapon) {
 }
 
 function StartActiveCheck() {
-    if (helicopterLaserActive || sniperHolders.size > 0) {
+    if (!sniperLaserLockedAtDefault && (helicopterLaserActive || sniperHolders.size > 0)) {
         Instance.SetNextThink(Instance.GetGameTime());
     }
 }
@@ -125,7 +126,7 @@ function RefreshSniperHolders() {
 }
 
 function TrackSniperPickup(weapon) {
-    if (!IsTrackedSniper(weapon)) {
+    if (sniperLaserLockedAtDefault || !IsTrackedSniper(weapon)) {
         return;
     }
 
@@ -283,6 +284,8 @@ function UpdateHelicopterLaser() {
 }
 
 function ActivateHelicopterLaser(activator) {
+    sniperLaserLockedAtDefault = false;
+
     if (!sniperLaser || !sniperLaser.IsValid()) {
         RefreshSniperLaser();
     }
@@ -329,8 +332,19 @@ function ActivateHelicopterLaser(activator) {
     Instance.SetNextThink(Instance.GetGameTime());
 }
 
+function ResetSniperLaserForEnding() {
+    sniperLaserLockedAtDefault = true;
+    helicopterLaserActive = false;
+    helicopterLaserParent = undefined;
+    helicopterLaserTarget = undefined;
+    helicopterLaserAngles = undefined;
+    helicopterLaserLastUpdateTime = 0;
+    sniperHolders.clear();
+    ResetLaserToDefault();
+}
+
 function Think() {
-    if (!helicopterLaserActive && sniperHolders.size === 0) {
+    if (sniperLaserLockedAtDefault || (!helicopterLaserActive && sniperHolders.size === 0)) {
         return;
     }
 
@@ -382,6 +396,8 @@ Instance.OnScriptInput("helicopter_laser", ({ activator }) => {
     ActivateHelicopterLaser(activator);
 });
 
+Instance.OnScriptInput("reset_sniper_laser", ResetSniperLaserForEnding);
+
 Instance.OnRoundStart(() => {
     if (helicopterLaserActive) {
         ResetLaserToDefault();
@@ -391,6 +407,7 @@ Instance.OnRoundStart(() => {
     helicopterLaserTarget = undefined;
     helicopterLaserAngles = undefined;
     helicopterLaserLastUpdateTime = 0;
+    sniperLaserLockedAtDefault = false;
     RefreshSnipers();
     UpdateLaserForExistingHolder();
     StartActiveCheck();
