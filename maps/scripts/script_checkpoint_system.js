@@ -33,15 +33,16 @@ const KZ_COUNTDOWN_HUD_NAME = "hud_kz_countdown";
 const KZ_COUNTDOWN_PANEL_ID = "kz_countdown";
 const KZ_COUNTDOWN_LABEL_ID = "kz_countdown_text";
 const KZ_COUNTDOWN_DIALOG_VARIABLE = "kz_countdown_time";
-const KZ_COUNTDOWN_DURATION = 45;
+const KZ_COUNTDOWN_DURATION = 40;
 const FAILURE_HOLD_TIME = 2;
 const SUCCESS_HOLD_TIME = 10;
 const CHAT_COLOR_PREFIX = "\x03";
 const JUMP_TRACK_WINDOW = 5;
-const JUMP_POSITION_POLL_INTERVAL = 0.01;
+const JUMP_POSITION_POLL_INTERVAL = 0.005;
 const AVERAGE_CHAT_SUCCESS_MARKS = new Set([5, 10, 15, 20, 30, 40, 50]);
 const NORMAL_KZ_KILL_SUCCESS_COUNT = 2;
 const NORMAL_KZ_COUNTDOWN_SUCCESS_COUNT = 2;
+const NORMAL_KZ_FAILURE_KILL_SOUND = "sound_normal_kz_failure_kill_awp";
 
 const progressByRun = new Map();
 const timerByRun = new Map();
@@ -381,6 +382,10 @@ function HandleNormalKzSuccess(player, successCount) {
 function HandleNormalKzFailure(player) {
     const pawn = GetPlayerPawn(player);
     if (pawn && pawn.IsAlive()) {
+        Instance.EntFireAtName({
+            name: NORMAL_KZ_FAILURE_KILL_SOUND,
+            input: "PlaySound"
+        });
         pawn.Kill();
     }
 }
@@ -805,6 +810,35 @@ function TimerThink() {
     }
 }
 
+function ResetAllCheckpointState() {
+    progressByRun.clear();
+    timerByRun.clear();
+    successCountByRun.clear();
+    successDistanceByRun.clear();
+    armedJumpByRun.clear();
+    jumpStartByRun.clear();
+    jumpDistanceByRun.clear();
+    completionPendingByRun.clear();
+
+    kzCountdownState = null;
+    kzCountdownPulseClass = null;
+
+    checkpointHud = null;
+    kzCountdownHud = null;
+
+    const checkpointLayout = GetCheckpointHud();
+    if (checkpointLayout) {
+        checkpointLayout.Reset();
+    }
+
+    const countdownLayout = GetKzCountdownHud();
+    if (countdownLayout) {
+        countdownLayout.Reset();
+    }
+
+    Instance.Msg("script_checkpoint_system.js: reset all checkpoint state");
+}
+
 for (const [systemId, config] of Object.entries(CHECKPOINT_CONFIGS)) {
     for (let checkpoint = 1; checkpoint <= config.finalCheckpoint; checkpoint += 1) {
         Instance.OnScriptInput(`${config.inputPrefix}${checkpoint}`, ({ activator }) => {
@@ -830,6 +864,9 @@ Instance.OnPlayerJump((event) => {
 Instance.OnPlayerLand((event) => {
     TrackPlayerLand(event.player);
 });
+
+Instance.OnActivate(ResetAllCheckpointState);
+Instance.OnRoundStart(ResetAllCheckpointState);
 
 Instance.OnPlayerDisconnect((event) => {
     const suffix = `:${event.playerSlot}`;
