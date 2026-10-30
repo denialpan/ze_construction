@@ -48,6 +48,18 @@ const NORMAL_KZ_FAILURE_KILL_SOUND = "sound_normal_kz_failure_kill_awp";
 const ITEMS_SCRIPT_ENTITY_NAME = "script_items";
 const RESET_SNIPER_LASER_INPUT = "reset_sniper_laser";
 const KZ_HELICOPTER_ENTITY_NAME = "train_kz_helicopter";
+const KZ_ENDING_CONGRATULATIONS_TEXT_NAME = "text_kz_ending_congratulations";
+const KZ_ENDING_THANKS_TEXT_NAME = "text_kz_ending_thanks";
+const KZ_ENDING_COLOR_CYCLE_DURATION = 1;
+const KZ_ENDING_COLOR_UPDATE_INTERVAL = 1 / 30;
+const KZ_ENDING_COLORS = [
+    { r: 255, g: 0, b: 0, a: 255 },
+    { r: 255, g: 128, b: 0, a: 255 },
+    { r: 255, g: 255, b: 0, a: 255 },
+    { r: 0, g: 255, b: 0, a: 255 },
+    { r: 0, g: 128, b: 255, a: 255 },
+    { r: 128, g: 0, b: 255, a: 255 }
+];
 
 const progressByRun = new Map();
 const timerByRun = new Map();
@@ -61,6 +73,7 @@ let checkpointHud = null;
 let kzCountdownHud = null;
 let kzCountdownState = null;
 let kzCountdownPulseClass = null;
+let kzEndingColorAnimationState = null;
 
 function GetPlayerController(entity) {
     if (!entity) {
@@ -391,6 +404,47 @@ function FireSuccessRelay(config, player, successCount) {
     FireRelay(`${config.successRelayPrefix}${successCount}`, player);
 }
 
+function SetKzEndingCongratulationsColor(color) {
+    Instance.EntFireAtName({
+        name: KZ_ENDING_CONGRATULATIONS_TEXT_NAME,
+        input: "SetTextColor",
+        value: color
+    });
+}
+
+function UpdateKzEndingColorAnimation(now) {
+    if (!kzEndingColorAnimationState) {
+        return;
+    }
+
+    const elapsed = Math.max(0, now - kzEndingColorAnimationState.startTime);
+    const cycleProgress = (elapsed % KZ_ENDING_COLOR_CYCLE_DURATION) / KZ_ENDING_COLOR_CYCLE_DURATION;
+    const colorProgress = cycleProgress * KZ_ENDING_COLORS.length;
+    const colorIndex = Math.floor(colorProgress) % KZ_ENDING_COLORS.length;
+    const nextColorIndex = (colorIndex + 1) % KZ_ENDING_COLORS.length;
+    const transition = colorProgress - Math.floor(colorProgress);
+    const easedTransition = transition * transition * (3 - 2 * transition);
+    const color = KZ_ENDING_COLORS[colorIndex];
+    const nextColor = KZ_ENDING_COLORS[nextColorIndex];
+
+    SetKzEndingCongratulationsColor({
+        r: Math.round(color.r + (nextColor.r - color.r) * easedTransition),
+        g: Math.round(color.g + (nextColor.g - color.g) * easedTransition),
+        b: Math.round(color.b + (nextColor.b - color.b) * easedTransition),
+        a: Math.round(color.a + (nextColor.a - color.a) * easedTransition)
+    });
+}
+
+function StartKzEndingColorAnimation() {
+    const now = Instance.GetGameTime();
+    kzEndingColorAnimationState = {
+        startTime: now,
+        nextUpdate: now
+    };
+    SetKzEndingCongratulationsColor(KZ_ENDING_COLORS[0]);
+    Instance.SetNextThink(now);
+}
+
 function HandleNormalKzSuccess(player, successCount, config) {
     const requiredSuccesses = Math.max(1, config.consecutiveSuccesses || 1);
     if (successCount >= requiredSuccesses) {
@@ -408,6 +462,17 @@ function HandleNormalKzSuccess(player, successCount, config) {
             input: "SetSpeed",
             value: 0
         });
+        Instance.EntFireAtName({
+            name: KZ_ENDING_CONGRATULATIONS_TEXT_NAME,
+            input: "SetMessage",
+            value: `${GetPlayerName(player)} has won the map!`
+        });
+        Instance.EntFireAtName({
+            name: KZ_ENDING_THANKS_TEXT_NAME,
+            input: "SetMessage",
+            value: "thank you for playing!"
+        });
+        StartKzEndingColorAnimation();
         ClearKzCountdownHud();
         return;
     }
@@ -888,6 +953,14 @@ function TimerThink() {
         }
     }
 
+    if (kzEndingColorAnimationState) {
+        if (now >= kzEndingColorAnimationState.nextUpdate) {
+            UpdateKzEndingColorAnimation(now);
+            kzEndingColorAnimationState.nextUpdate = now + KZ_ENDING_COLOR_UPDATE_INTERVAL;
+        }
+        needsNextThink = true;
+    }
+
     if (needsNextThink) {
         Instance.SetNextThink(now);
     }
@@ -905,6 +978,7 @@ function ResetAllCheckpointState() {
 
     kzCountdownState = null;
     kzCountdownPulseClass = null;
+    kzEndingColorAnimationState = null;
 
     checkpointHud = null;
     kzCountdownHud = null;
