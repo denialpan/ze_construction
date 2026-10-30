@@ -42,6 +42,7 @@ const JUMP_POSITION_POLL_INTERVAL = 0.005;
 const AVERAGE_CHAT_SUCCESS_MARKS = new Set([5, 10, 15, 20, 30, 40, 50]);
 const NORMAL_KZ_KILL_SUCCESS_COUNT = 2;
 const NORMAL_KZ_COUNTDOWN_SUCCESS_COUNT = 2;
+const NORMAL_KZ_SUCCESS_40_RISE_SOUND = "sound_normal_kz_success_40_rise";
 const NORMAL_KZ_FAILURE_KILL_SOUND = "sound_normal_kz_failure_kill_awp";
 
 const progressByRun = new Map();
@@ -379,7 +380,14 @@ function HandleNormalKzSuccess(player, successCount) {
     }
 }
 
-function HandleNormalKzFailure(player) {
+function HandleNormalKzFailure(player, successCount) {
+    if (successCount >= NORMAL_KZ_KILL_SUCCESS_COUNT) {
+        Instance.EntFireAtName({
+            name: NORMAL_KZ_SUCCESS_40_RISE_SOUND,
+            input: "StopSound"
+        });
+    }
+
     const pawn = GetPlayerPawn(player);
     if (pawn && pawn.IsAlive()) {
         Instance.EntFireAtName({
@@ -469,6 +477,7 @@ function GetPlayerProgress(systemId, playerSlot) {
 function FailCheckpointSystem(systemId, config, player, reason) {
     const playerSlot = player.GetPlayerSlot();
     const runKey = GetRunKey(systemId, playerSlot);
+    const successCount = successCountByRun.get(runKey) || 0;
 
     ResetPlayerProgress(runKey);
     ResetSuccessCount(runKey);
@@ -481,7 +490,7 @@ function FailCheckpointSystem(systemId, config, player, reason) {
     Instance.Msg(`script_checkpoint_system.js: player ${playerSlot} failed ${systemId}${reason ? `; ${reason}` : ""}`);
     FireRelay(config.failureRelay, player);
     if (systemId === "normal_kz") {
-        HandleNormalKzFailure(player);
+        HandleNormalKzFailure(player, successCount);
     }
 }
 
