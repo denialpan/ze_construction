@@ -381,12 +381,14 @@ function HandleNormalKzSuccess(player, successCount) {
 }
 
 function HandleNormalKzFailure(player, successCount) {
-    if (successCount >= NORMAL_KZ_KILL_SUCCESS_COUNT) {
-        Instance.EntFireAtName({
-            name: NORMAL_KZ_SUCCESS_40_RISE_SOUND,
-            input: "StopSound"
-        });
+    if (successCount < NORMAL_KZ_KILL_SUCCESS_COUNT) {
+        return;
     }
+
+    Instance.EntFireAtName({
+        name: NORMAL_KZ_SUCCESS_40_RISE_SOUND,
+        input: "StopSound"
+    });
 
     const pawn = GetPlayerPawn(player);
     if (pawn && pawn.IsAlive()) {
@@ -395,6 +397,7 @@ function HandleNormalKzFailure(player, successCount) {
             input: "PlaySound"
         });
         pawn.Kill();
+        Instance.ServerCommand("mp_restartgame 1");
     }
 }
 
