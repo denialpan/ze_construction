@@ -28,20 +28,19 @@ const CHECKPOINT_CONFIGS = {
 
 const HUD_NAME = "hud_script_checkpoint_system";
 const HUD_PANEL_ID = "script_checkpoint_timer";
-const HUD_UPDATE_INTERVAL = 1 / 50;
+const HUD_UPDATE_INTERVAL = 1 / 100;
 const KZ_COUNTDOWN_HUD_NAME = "hud_kz_countdown";
 const KZ_COUNTDOWN_PANEL_ID = "kz_countdown";
 const KZ_COUNTDOWN_LABEL_ID = "kz_countdown_text";
 const KZ_COUNTDOWN_DIALOG_VARIABLE = "kz_countdown_time";
 const KZ_COUNTDOWN_DURATION = 45;
-const KZ_COUNTDOWN_UPDATE_INTERVAL = 1 / 50;
 const FAILURE_HOLD_TIME = 2;
 const SUCCESS_HOLD_TIME = 10;
 const CHAT_COLOR_PREFIX = "\x03";
 const JUMP_TRACK_WINDOW = 5;
 const JUMP_POSITION_POLL_INTERVAL = 0.01;
 const AVERAGE_CHAT_SUCCESS_MARKS = new Set([5, 10, 15, 20, 30, 40, 50]);
-const NORMAL_KZ_KILL_SUCCESS_COUNT = 40;
+const NORMAL_KZ_KILL_SUCCESS_COUNT = 2;
 const NORMAL_KZ_COUNTDOWN_SUCCESS_COUNT = 2;
 
 const progressByRun = new Map();
@@ -379,6 +378,13 @@ function HandleNormalKzSuccess(player, successCount) {
     }
 }
 
+function HandleNormalKzFailure(player) {
+    const pawn = GetPlayerPawn(player);
+    if (pawn && pawn.IsAlive()) {
+        pawn.Kill();
+    }
+}
+
 function GetPawnPosition(pawn) {
     if (!pawn || typeof pawn.GetAbsOrigin !== "function") {
         return undefined;
@@ -469,6 +475,9 @@ function FailCheckpointSystem(systemId, config, player, reason) {
 
     Instance.Msg(`script_checkpoint_system.js: player ${playerSlot} failed ${systemId}${reason ? `; ${reason}` : ""}`);
     FireRelay(config.failureRelay, player);
+    if (systemId === "normal_kz") {
+        HandleNormalKzFailure(player);
+    }
 }
 
 function GetBlockingActiveConflict(systemId, playerSlot) {
@@ -780,7 +789,7 @@ function TimerThink() {
 
         if (now >= kzCountdownState.nextUpdate || remaining <= 0) {
             UpdateKzCountdownHud(remaining);
-            kzCountdownState.nextUpdate = now + KZ_COUNTDOWN_UPDATE_INTERVAL;
+            kzCountdownState.nextUpdate = now + HUD_UPDATE_INTERVAL;
         }
 
         if (remaining <= 0) {

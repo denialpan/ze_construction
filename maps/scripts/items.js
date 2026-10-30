@@ -3,7 +3,9 @@ import { Instance } from "cs_script/point_script";
 const SNIPER_ENTITY_NAME = "sniper";
 const SNIPER_CLASS_NAME = "weapon_awp";
 const LASER_ENTITY_NAME = "sniper_laser";
+const HELICOPTER_LASER_ENTITY_NAME = "helicopter_laser";
 const LASER_UPDATE_INTERVAL = 0.005;
+const HELICOPTER_LASER_FOCUS_LERP_TIME = 0.15;
 
 let sniperWeapons = [];
 let sniperHolders = new Map();
@@ -12,6 +14,31 @@ let sniperLaserDefaultTransform = undefined;
 let sniperLaserAtDefault = true;
 let debugActiveWeapon = undefined;
 let debugActiveDescription = "";
+let helicopterLaserActive = false;
+let helicopterLaserParent = undefined;
+let helicopterLaserTarget = undefined;
+let helicopterLaserAngles = undefined;
+let helicopterLaserLastUpdateTime = 0;
+
+function GetPlayerController(entity) {
+    if (!entity) {
+        return undefined;
+    }
+
+    if (typeof entity.GetPlayerSlot === "function") {
+        return entity;
+    }
+
+    if (typeof entity.GetPlayerController === "function") {
+        return entity.GetPlayerController();
+    }
+
+    if (typeof entity.GetOriginalPlayerController === "function") {
+        return entity.GetOriginalPlayerController();
+    }
+
+    return undefined;
+}
 
 function RefreshSnipers() {
     sniperWeapons = Instance.FindEntitiesByName(SNIPER_ENTITY_NAME).filter((entity) => {
@@ -77,7 +104,7 @@ function DescribeWeapon(weapon) {
 }
 
 function StartActiveCheck() {
-    if (sniperHolders.size > 0) {
+    if (helicopterLaserActive || sniperHolders.size > 0) {
         Instance.SetNextThink(Instance.GetGameTime());
     }
 }
@@ -109,7 +136,9 @@ function TrackSniperPickup(weapon) {
 
     sniperHolders.set(weapon, owner);
     Instance.Msg("items.js: tracked sniper was picked up.");
-    UpdateLaserForHolder(weapon, owner);
+    if (!helicopterLaserActive) {
+        UpdateLaserForHolder(weapon, owner);
+    }
     StartActiveCheck();
 }
 
@@ -120,7 +149,9 @@ function TrackSniperDrop(weapon) {
 
     sniperHolders.delete(weapon);
     Instance.Msg("items.js: tracked sniper was dropped.");
-    ResetLaserToDefault();
+    if (!helicopterLaserActive) {
+        ResetLaserToDefault();
+    }
 }
 
 function ResetLaserToDefault() {
@@ -155,6 +186,7 @@ function UpdateLaserForHolder(weapon, pawn) {
     if (!IsTrackedSniper(activeWeapon)) {
         const description = DescribeWeapon(activeWeapon);
         if (debugActiveDescription !== description) {
+            Instance.Msg(`items.js: tracked sniper is held, active weapon is ${description}.`);
             debugActiveDescription = description;
         }
         ResetLaserToDefault();
@@ -175,14 +207,139 @@ function UpdateLaserForHolder(weapon, pawn) {
         angles
     });
     sniperLaserAtDefault = false;
+    Instance.Msg(`items.js: transformed sniper_laser to eye position (${position.x}, ${position.y}, ${position.z}) and angles (${angles.pitch}, ${angles.yaw}, ${angles.roll}).`);
+}
+
+function GetAnglesToward(start, end) {
+    const dx = end.x - start.x;
+    const dy = end.y - start.y;
+    const dz = end.z - start.z;
+    const horizontalDistance = Math.sqrt(dx * dx + dy * dy);
+    const radiansToDegrees = 180 / Math.PI;
+
+    return {
+        pitch: -Math.atan2(dz, horizontalDistance) * radiansToDegrees,
+        yaw: Math.atan2(dy, dx) * radiansToDegrees,
+        roll: 0
+    };
+}
+
+function LerpAngle(current, target, amount) {
+    const delta = ((target - current + 540) % 360) - 180;
+    return current + delta * amount;
+}
+
+function LerpAngles(current, target, amount) {
+    return {
+        pitch: LerpAngle(current.pitch, target.pitch, amount),
+        yaw: LerpAngle(current.yaw, target.yaw, amount),
+        roll: LerpAngle(current.roll, target.roll, amount)
+    };
+}
+
+function UpdateHelicopterLaser() {
+    if (
+        !helicopterLaserActive ||
+        !helicopterLaserParent ||
+        !helicopterLaserParent.IsValid() ||
+        !sniperLaser ||
+        !sniperLaser.IsValid()
+    ) {
+        return;
+    }
+
+    const target = helicopterLaserTarget;
+    if (!target || !target.IsValid() || !target.IsAlive()) {
+        return;
+    }
+
+    const laserPosition = sniperLaser.GetAbsOrigin();
+    const targetPosition = target.GetEyePosition();
+    const targetAngles = GetAnglesToward(laserPosition, targetPosition);
+    const now = Instance.GetGameTime();
+    const elapsed = Math.max(0, now - helicopterLaserLastUpdateTime);
+    const lerpAmount = Math.min(
+        1,
+        1 - Math.exp((-5 * elapsed) / HELICOPTER_LASER_FOCUS_LERP_TIME)
+    );
+    const angles = helicopterLaserAngles
+        ? LerpAngles(helicopterLaserAngles, targetAngles, lerpAmount)
+        : targetAngles;
+
+    helicopterLaserAngles = angles;
+    helicopterLaserLastUpdateTime = now;
+
+    sniperLaser.Teleport({
+        angles
+    });
+    Instance.Msg(
+        `items.js: helicopter laser tracking; laser=(${laserPosition.x}, ${laserPosition.y}, ${laserPosition.z}) ` +
+        `target=(${targetPosition.x}, ${targetPosition.y}, ${targetPosition.z}) ` +
+        `angles=(${angles.pitch}, ${angles.yaw}, ${angles.roll}) ` +
+        `target_angles=(${targetAngles.pitch}, ${targetAngles.yaw}, ${targetAngles.roll}) ` +
+        `lerp=${lerpAmount} ` +
+        `parented=${sniperLaser.GetParent() === helicopterLaserParent}.`
+    );
+}
+
+function ActivateHelicopterLaser(activator) {
+    if (!sniperLaser || !sniperLaser.IsValid()) {
+        RefreshSniperLaser();
+    }
+
+    helicopterLaserParent = Instance.FindEntitiesByName(HELICOPTER_LASER_ENTITY_NAME)[0];
+    if (!sniperLaser || !sniperLaser.IsValid()) {
+        Instance.Msg(`items.js: could not find prop_dynamic named ${LASER_ENTITY_NAME}.`);
+        return;
+    }
+
+    if (!helicopterLaserParent || !helicopterLaserParent.IsValid()) {
+        Instance.Msg(`items.js: could not find entity named ${HELICOPTER_LASER_ENTITY_NAME}.`);
+        return;
+    }
+
+    const player = GetPlayerController(activator);
+    const target = player?.GetPlayerPawn();
+    if (!target || !target.IsValid() || !target.IsAlive()) {
+        Instance.Msg("items.js: helicopter_laser needs a living player activator.");
+        return;
+    }
+
+    const position = helicopterLaserParent.GetAbsOrigin();
+    const targetPosition = target.GetEyePosition();
+    const angles = GetAnglesToward(position, targetPosition);
+
+    sniperLaser.SetParent(undefined);
+    sniperLaser.Teleport({ position, angles });
+    sniperLaser.SetParent(helicopterLaserParent);
+    sniperLaserAtDefault = false;
+    helicopterLaserActive = true;
+    helicopterLaserTarget = target;
+    helicopterLaserAngles = angles;
+    helicopterLaserLastUpdateTime = Instance.GetGameTime();
+    const actualPosition = sniperLaser.GetAbsOrigin();
+    Instance.Msg(
+        `items.js: activated helicopter laser for player ${player.GetPlayerSlot()}; ` +
+        `anchor=(${position.x}, ${position.y}, ${position.z}) ` +
+        `laser=(${actualPosition.x}, ${actualPosition.y}, ${actualPosition.z}) ` +
+        `target=(${targetPosition.x}, ${targetPosition.y}, ${targetPosition.z}) ` +
+        `angles=(${angles.pitch}, ${angles.yaw}, ${angles.roll}) ` +
+        `parented=${sniperLaser.GetParent() === helicopterLaserParent}.`
+    );
+    Instance.SetNextThink(Instance.GetGameTime());
 }
 
 function Think() {
-    if (sniperHolders.size === 0) {
+    if (!helicopterLaserActive && sniperHolders.size === 0) {
         return;
     }
 
     Instance.SetNextThink(Instance.GetGameTime() + LASER_UPDATE_INTERVAL);
+
+    if (helicopterLaserActive) {
+        UpdateHelicopterLaser();
+        return;
+    }
 
     for (const [weapon, pawn] of sniperHolders) {
         if (!weapon || !weapon.IsValid() || !pawn || !pawn.IsValid() || !pawn.IsAlive()) {
@@ -221,7 +378,19 @@ Instance.OnWeaponDrop((event) => {
     TrackSniperDrop(event.weapon);
 });
 
+Instance.OnScriptInput("helicopter_laser", ({ activator }) => {
+    ActivateHelicopterLaser(activator);
+});
+
 Instance.OnRoundStart(() => {
+    if (helicopterLaserActive) {
+        ResetLaserToDefault();
+    }
+    helicopterLaserActive = false;
+    helicopterLaserParent = undefined;
+    helicopterLaserTarget = undefined;
+    helicopterLaserAngles = undefined;
+    helicopterLaserLastUpdateTime = 0;
     RefreshSnipers();
     UpdateLaserForExistingHolder();
     StartActiveCheck();
