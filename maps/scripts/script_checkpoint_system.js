@@ -33,7 +33,7 @@ const KZ_COUNTDOWN_HUD_NAME = "hud_kz_countdown";
 const KZ_COUNTDOWN_PANEL_ID = "kz_countdown";
 const KZ_COUNTDOWN_LABEL_ID = "kz_countdown_text";
 const KZ_COUNTDOWN_DIALOG_VARIABLE = "kz_countdown_time";
-const KZ_COUNTDOWN_DURATION = 4;
+const KZ_COUNTDOWN_DURATION = 40;
 const ROUND_RESTART_DELAY = 5;
 const FAILURE_HOLD_TIME = 2;
 const SUCCESS_HOLD_TIME = 10;
@@ -820,8 +820,17 @@ function TimerThink() {
             HideKzCountdownHud();
             kzCountdownState = null;
 
+            Instance.EntFireAtName({
+                name: NORMAL_KZ_SUCCESS_40_RISE_SOUND,
+                input: "StopSound"
+            });
+
             const pawn = GetPlayerPawn(countdownPlayer);
             if (pawn && pawn.IsAlive()) {
+                Instance.EntFireAtName({
+                    name: NORMAL_KZ_FAILURE_KILL_SOUND,
+                    input: "PlaySound"
+                });
                 pawn.Kill();
             }
             RestartRound();
