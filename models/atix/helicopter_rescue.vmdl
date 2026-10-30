@@ -1,0 +1,2639 @@
+<!-- kv3 encoding:text:version{e21c7f3c-8a33-41c5-9977-a76d3a32aa0d} format:modeldoc41:version{12fc9d44-453a-4ae4-b4d9-7e2ac0bbd4e0} -->
+{
+	rootNode = 
+	{
+		_class = "RootNode"
+		children = 
+		[
+			{
+				_class = "BoneMarkupList"
+				bone_cull_type = "None"
+				primary_root_bone = ""
+			},
+			{
+				_class = "RenderMeshList"
+				children = 
+				[
+					{
+						_class = "RenderMeshFile"
+						name = "helicopter_rescue_bg_body_lod0"
+						filename = "models/atix/helicopter_rescue_helicopter_rescue_bg_body_lod0.dmx"
+						import_scale = 1.0
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+				]
+			},
+			{
+				_class = "AttachmentList"
+				children = 
+				[
+					{
+						_class = "Attachment"
+						name = "starboard_light"
+						parent_bone = "starboard_light"
+						relative_origin = [ 0.0, 0.0, 0.0 ]
+						relative_angles = [ -0.0, 0.0, 0.0 ]
+						weight = 1.0
+						ignore_rotation = false
+					},
+					{
+						_class = "Attachment"
+						name = "port_light"
+						parent_bone = "port_light"
+						relative_origin = [ 0.0, 0.0, 0.0 ]
+						relative_angles = [ 0.0, 0.0, 0.0 ]
+						weight = 1.0
+						ignore_rotation = false
+					},
+					{
+						_class = "Attachment"
+						name = "strobe_red"
+						parent_bone = "strobe_red"
+						relative_origin = [ 0.0, 0.0, 0.0 ]
+						relative_angles = [ -0.0, 0.0, 0.0 ]
+						weight = 1.0
+						ignore_rotation = false
+					},
+					{
+						_class = "Attachment"
+						name = "port_backlight"
+						parent_bone = "port_backlight"
+						relative_origin = [ 0.0, 0.0, 0.0 ]
+						relative_angles = [ -0.0, 0.0, 0.0 ]
+						weight = 1.0
+						ignore_rotation = false
+					},
+					{
+						_class = "Attachment"
+						name = "starboard_backlight"
+						parent_bone = "starboard_backlight"
+						relative_origin = [ 0.0, 0.000031, 0.0 ]
+						relative_angles = [ -0.0, 0.0, 0.0 ]
+						weight = 1.0
+						ignore_rotation = false
+					},
+					{
+						_class = "Attachment"
+						name = "engSmokeA"
+						parent_bone = "engsmokea"
+						relative_origin = [ 0.0, 0.0, 0.000015 ]
+						relative_angles = [ -0.0, 0.0, 0.0 ]
+						weight = 1.0
+						ignore_rotation = false
+					},
+					{
+						_class = "Attachment"
+						name = "engSmokeB"
+						parent_bone = "engsmokeb"
+						relative_origin = [ 0.0, 0.0, 0.000015 ]
+						relative_angles = [ -0.0, 0.0, 0.0 ]
+						weight = 1.0
+						ignore_rotation = false
+					},
+					{
+						_class = "Attachment"
+						name = "cam_pos"
+						parent_bone = "main_root"
+						relative_origin = [ -0.0, -100.00002, -190.00002 ]
+						relative_angles = [ 74.99999, -89.99997, 179.99998 ]
+						weight = 1.0
+						ignore_rotation = false
+					},
+				]
+			},
+			{
+				_class = "AnimationList"
+				children = 
+				[
+					{
+						_class = "AnimFile"
+						name = "1turn"
+						is_default_idle_anim = false
+						activity_name = ""
+						activity_weight = 1
+						weight_list_name = ""
+						fade_in_time = 0.2
+						fade_out_time = 0.2
+						looping = false
+						delta = false
+						worldSpace = false
+						hidden = false
+						anim_markup_ordered = false
+						disable_compression = false
+						animgraph_additive = false
+						delete_from_compiled_model = false
+						source_filename = "models/atix/helicopter_rescue_1turn.dmx"
+						import_bone_scales = false
+						start_frame = -1
+						end_frame = -1
+						framerate = -1.0
+						reverse = false
+						additional_anim_files = [  ]
+					},
+					{
+						_class = "AnimFile"
+						name = "2start"
+						is_default_idle_anim = false
+						activity_name = ""
+						activity_weight = 1
+						weight_list_name = ""
+						fade_in_time = 0.2
+						fade_out_time = 0.2
+						looping = false
+						delta = false
+						worldSpace = false
+						hidden = false
+						anim_markup_ordered = false
+						disable_compression = false
+						animgraph_additive = false
+						delete_from_compiled_model = false
+						source_filename = "models/atix/helicopter_rescue_2start.dmx"
+						import_bone_scales = false
+						start_frame = -1
+						end_frame = -1
+						framerate = -1.0
+						reverse = false
+						additional_anim_files = [  ]
+					},
+					{
+						_class = "AnimFile"
+						name = "3ready"
+						is_default_idle_anim = false
+						activity_name = ""
+						activity_weight = 1
+						weight_list_name = ""
+						fade_in_time = 0.2
+						fade_out_time = 0.2
+						looping = true
+						delta = false
+						worldSpace = false
+						hidden = false
+						anim_markup_ordered = false
+						disable_compression = false
+						animgraph_additive = false
+						delete_from_compiled_model = false
+						source_filename = "models/atix/helicopter_rescue_3ready.dmx"
+						import_bone_scales = false
+						start_frame = -1
+						end_frame = -1
+						framerate = -1.0
+						reverse = false
+						additional_anim_files = [  ]
+					},
+					{
+						_class = "AnimFile"
+						name = "helicopter_dust"
+						is_default_idle_anim = false
+						activity_name = ""
+						activity_weight = 1
+						weight_list_name = ""
+						fade_in_time = 0.2
+						fade_out_time = 0.2
+						looping = true
+						delta = false
+						worldSpace = false
+						hidden = false
+						anim_markup_ordered = false
+						disable_compression = false
+						animgraph_additive = false
+						delete_from_compiled_model = false
+						source_filename = "models/atix/helicopter_rescue_helicopter_dust.dmx"
+						import_bone_scales = false
+						start_frame = -1
+						end_frame = -1
+						framerate = -1.0
+						reverse = false
+						additional_anim_files = [  ]
+					},
+				]
+				default_root_bone_name = ""
+			},
+			{
+				_class = "PhysicsShapeList"
+				children = 
+				[
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_4_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_2_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull1.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_5_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull2.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_1_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull3.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_6_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull4.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_3_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull5.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_7_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull6.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_0_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull7.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_8_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull8.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_9_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull9.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_10_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull10.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_11_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull11.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_12_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull12.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_13_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull13.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_14_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull14.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_15_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull15.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_16_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull16.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_17_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull17.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_18_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull18.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_19_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull19.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_20_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull20.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_21_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull21.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_22_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull22.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_23_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull24.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_24_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull24.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_25_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull25.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_26_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull26.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_27_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull27.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_28_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull28.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_29_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull29.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_30_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull30.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_31_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull31.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_32_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull32.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_33_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull33.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_34_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull34.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_35_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull35.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_36_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull36.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "PhysicsHullFile"
+						name = "main_root_37_mesh"
+						parent_bone = "main_root"
+						surface_prop = "metalvehicle"
+						collision_prop = "default"
+						tool_material = ""
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 180.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						filename = "models/atix/helicopter_rescue_hull37.dmx"
+						import_scale = 1.0
+						faceMergeAngle = 10.0
+						maxHullVertices = 0
+						import_mode = "SingleHull"
+						small_element_threshold = 0.0
+						thin_element_threshold = 0.0
+						optimization_algorithm = "QEM"
+						disable_region_svm = false
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+				]
+				leave_body_collision_unmodified = false
+				body_order = "default"
+			},
+			{
+				_class = "GameDataList"
+				children = 
+				[
+					{
+						_class = "GenericGameData"
+						game_class = "particle"
+						game_keys = 
+						{
+							name = null
+							attachment_point = "strobe_red"
+							attachment_type = "point_follow"
+							attachment_offset = null
+						}
+					},
+				]
+			},
+			{
+				_class = "HitboxSetList"
+				children = 
+				[
+					{
+						_class = "HitboxSet"
+						name = "default"
+						children = 
+						[
+							{
+								_class = "Hitbox"
+								name = "main_root"
+								parent_bone = "main_root"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -141.44412, -181.40767, -597.0126 ]
+								hitbox_maxs = [ 141.86932, 77.19322, 373.84708 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "piston_top"
+								parent_bone = "piston_top"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ 0.0, -99.63718, -1.465864 ]
+								hitbox_maxs = [ 38.32617, 1.466131, 1.4664 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "piston_bot"
+								parent_bone = "piston_bot"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -4.654987, -96.21134, -0.999086 ]
+								hitbox_maxs = [ 44.922577, 0.998833, 0.998562 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "back_rotor"
+								parent_bone = "back_rotor"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -11.32607, -116.096016, -116.09564 ]
+								hitbox_maxs = [ 0.000176, 116.095116, 116.095474 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rotor_a"
+								parent_bone = "rotor_a"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -32.896255, -17.917355, -21.866688 ]
+								hitbox_maxs = [ 16.27249, 11.497757, 21.313265 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rotor_1"
+								parent_bone = "rotor_1"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -30.683905, -17.904343, -18.682673 ]
+								hitbox_maxs = [ 211.05571, 11.49725, 15.039456 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "center_1"
+								parent_bone = "center_1"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -1.06036, -1.663977, -16.930756 ]
+								hitbox_maxs = [ 204.7392, 2.514195, 9.285365 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "joint4"
+								parent_bone = "joint4"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -108.27354, 0.0, -12.894356 ]
+								hitbox_maxs = [ 0.0, 3.434607, 0.0 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rgt_joint2"
+								parent_bone = "rgt_joint2"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ 0.0, 0.0, -3.688209 ]
+								hitbox_maxs = [ 200.0, 5.508166, 0.892751 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rgt_joint3"
+								parent_bone = "rgt_joint3"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -1.02384, 0.0, -4.511662 ]
+								hitbox_maxs = [ 159.99998, 2.6411, 0.000002 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rgt_joint4"
+								parent_bone = "rgt_joint4"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -108.23682, 0.0, -11.008693 ]
+								hitbox_maxs = [ 29.480762, 3.406344, 0.0 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "lft_joint2"
+								parent_bone = "lft_joint2"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ 0.0, 0.0, -3.226552 ]
+								hitbox_maxs = [ 200.0, 5.254362, 1.354411 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "lft_joint3"
+								parent_bone = "lft_joint3"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -1.102307, 0.0, -6.294561 ]
+								hitbox_maxs = [ 159.99995, 3.160255, 0.000002 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "lft_joint4"
+								parent_bone = "lft_joint4"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -0.335627, 0.0, -9.542604 ]
+								hitbox_maxs = [ 29.354506, 3.394686, 0.0 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rotor_b"
+								parent_bone = "rotor_b"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -7.636323, -11.494035, -21.073147 ]
+								hitbox_maxs = [ 33.168655, 17.913425, 15.790272 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rotor_2"
+								parent_bone = "rotor_2"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -210.90973, -11.490901, -19.549286 ]
+								hitbox_maxs = [ 30.83008, 17.913425, 8.418591 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "center_2"
+								parent_bone = "center_2"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -204.97935, -2.328141, -18.921707 ]
+								hitbox_maxs = [ 0.0, 2.058526, 8.632981 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "joint5"
+								parent_bone = "joint5"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -3.830415, -2.352928, -13.38512 ]
+								hitbox_maxs = [ 70.59305, 0.0, 0.0 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rgt_joint5"
+								parent_bone = "rgt_joint5"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -200.25635, -5.173406, -0.767606 ]
+								hitbox_maxs = [ 0.0, 0.0, 4.155188 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rgt_joint6"
+								parent_bone = "rgt_joint6"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -159.99997, -2.372785, -2.8601 ]
+								hitbox_maxs = [ 46.10818, 0.000015, 0.000002 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rgt_joint7"
+								parent_bone = "rgt_joint7"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -32.927742, -2.235598, -10.735421 ]
+								hitbox_maxs = [ 40.65075, 0.0, 0.0 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "lft_joint5"
+								parent_bone = "lft_joint5"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -199.99979, -5.12876, -1.856833 ]
+								hitbox_maxs = [ 0.0, 0.0, 1.115537 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "lft_joint6"
+								parent_bone = "lft_joint6"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -201.65236, -2.352922, -9.282325 ]
+								hitbox_maxs = [ 46.04294, 0.0, 0.000002 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "lft_joint7"
+								parent_bone = "lft_joint7"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -41.616657, -2.352916, -9.441827 ]
+								hitbox_maxs = [ 40.58725, 0.0, 0.0 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rotor_c"
+								parent_bone = "rotor_c"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -35.833855, -17.921913, -21.567677 ]
+								hitbox_maxs = [ 8.061678, 11.495304, 21.612238 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rotor_3"
+								parent_bone = "rotor_3"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -35.833855, -17.917355, -18.469063 ]
+								hitbox_maxs = [ 211.55327, 11.492361, 15.3365 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "center_3"
+								parent_bone = "center_3"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ 0.0, -2.266278, -16.722864 ]
+								hitbox_maxs = [ 205.23901, 2.335878, 9.493111 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "joint6"
+								parent_bone = "joint6"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -70.51947, 0.0, -8.290958 ]
+								hitbox_maxs = [ 0.754787, 2.273362, 0.393976 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rgt_joint8"
+								parent_bone = "rgt_joint8"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ 0.0, 0.0, 0.0 ]
+								hitbox_maxs = [ 200.0, 5.134733, 1.687191 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rgt_joint9"
+								parent_bone = "rgt_joint9"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ 0.0, -0.000015, -0.632183 ]
+								hitbox_maxs = [ 160.00006, 2.323529, 1.545998 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rgt_joint10"
+								parent_bone = "rgt_joint10"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -40.65254, 0.0, -8.162138 ]
+								hitbox_maxs = [ 28.565596, 2.261008, 0.0 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "lft_joint8"
+								parent_bone = "lft_joint8"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ 0.0, 0.0, 0.0 ]
+								hitbox_maxs = [ 200.00003, 5.159431, 2.13917 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "lft_joint9"
+								parent_bone = "lft_joint9"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ 0.0, 0.0, -0.182011 ]
+								hitbox_maxs = [ 160.00003, 2.348242, 1.996181 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "lft_joint10"
+								parent_bone = "lft_joint10"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -40.49371, 0.0, -6.234277 ]
+								hitbox_maxs = [ 27.867668, 2.285699, 1.091485 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rotor_d"
+								parent_bone = "rotor_d"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -15.823577, -11.497351, -21.369627 ]
+								hitbox_maxs = [ 32.469025, 17.900343, 17.092026 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rotor_4"
+								parent_bone = "rotor_4"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -210.4089, -11.495437, -19.754707 ]
+								hitbox_maxs = [ 31.074778, 17.900343, 8.124304 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "center_4"
+								parent_bone = "center_4"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -204.48088, -2.956503, -19.132864 ]
+								hitbox_maxs = [ 0.0, 1.545057, 8.422394 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "joint7"
+								parent_bone = "joint7"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -2.503749, -2.893086, -9.430874 ]
+								hitbox_maxs = [ 9.175322, 0.0, 0.0 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rgt_joint11"
+								parent_bone = "rgt_joint11"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -199.99992, -5.540105, -0.60556 ]
+								hitbox_maxs = [ 0.0, 0.000015, 6.767879 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rgt_joint12"
+								parent_bone = "rgt_joint12"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -160.00003, -2.389106, -1.178024 ]
+								hitbox_maxs = [ 0.0, 0.0, 0.0 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rgt_joint13"
+								parent_bone = "rgt_joint13"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -30.715586, -2.776824, -6.781179 ]
+								hitbox_maxs = [ 65.853386, 0.0, 0.0 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "lft_joint11"
+								parent_bone = "lft_joint11"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -199.99982, -5.540119, -1.068649 ]
+								hitbox_maxs = [ 0.0, 0.0, 1.166203 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "lft_joint12"
+								parent_bone = "lft_joint12"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -160.0, -2.744508, -1.640671 ]
+								hitbox_maxs = [ 0.0, 0.0, 0.000023 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "lft_joint13"
+								parent_bone = "lft_joint13"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -30.868475, -3.046314, -6.676086 ]
+								hitbox_maxs = [ 63.62484, 0.0, 0.0 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rotor_e"
+								parent_bone = "rotor_e"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -36.002712, -17.92191, -21.2863 ]
+								hitbox_maxs = [ 8.121846, 11.487931, 16.669256 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rotor_5"
+								parent_bone = "rotor_5"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -30.440907, -17.92191, -17.931515 ]
+								hitbox_maxs = [ 211.61703, 11.486019, 8.451782 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "center_5"
+								parent_bone = "center_5"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ 0.0, -2.514397, -16.186174 ]
+								hitbox_maxs = [ 205.3088, 1.77528, 10.027931 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "right_side_5"
+								parent_bone = "right_side_5"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ 0.0, 0.0, 0.0 ]
+								hitbox_maxs = [ 37.282692, 4.926794, 6.038762 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rgt_joint14"
+								parent_bone = "rgt_joint14"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ 0.0, 0.0, -1.418182 ]
+								hitbox_maxs = [ 200.22388, 5.072885, 1.974228 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rgt_joint15"
+								parent_bone = "rgt_joint15"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ 0.0, -0.437949, -5.296951 ]
+								hitbox_maxs = [ 202.98338, 1.629189, 1.739155 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "lft_joint14"
+								parent_bone = "lft_joint14"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ 0.0, -0.000015, -0.000012 ]
+								hitbox_maxs = [ 200.37836, 5.219018, 4.61607 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "lft_joint15"
+								parent_bone = "lft_joint15"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ 0.0, -0.218761, -6.750748 ]
+								hitbox_maxs = [ 182.64342, 1.921398, 2.196976 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rotor_f"
+								parent_bone = "rotor_f"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -15.715511, -11.497739, -15.338915 ]
+								hitbox_maxs = [ 32.54311, 17.900364, 21.529772 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rotor_6"
+								parent_bone = "rotor_6"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -210.33672, -11.497739, -20.291443 ]
+								hitbox_maxs = [ 31.148914, 17.89579, 15.196589 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "center_6"
+								parent_bone = "center_6"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -204.41438, -2.555783, -19.670483 ]
+								hitbox_maxs = [ 0.0, 1.398651, 7.886375 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "joint9"
+								parent_bone = "joint9"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ 0.0, -1.675709, -12.090217 ]
+								hitbox_maxs = [ 10.546215, 1.053522, 0.0 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rgt_joint17"
+								parent_bone = "rgt_joint17"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -199.9999, -4.356864, -2.268288 ]
+								hitbox_maxs = [ 0.0, 0.613666, 0.908127 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rgt_joint18"
+								parent_bone = "rgt_joint18"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -160.0, -1.652711, -1.961078 ]
+								hitbox_maxs = [ 0.0, 1.10318, 1.85754 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "rgt_joint19"
+								parent_bone = "rgt_joint19"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -29.384155, -0.765771, -9.440502 ]
+								hitbox_maxs = [ 0.212876, 1.179112, 0.0 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "lft_joint17"
+								parent_bone = "lft_joint17"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -199.9998, -4.955297, -2.752159 ]
+								hitbox_maxs = [ 0.0, 0.015235, 0.424244 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "lft_joint18"
+								parent_bone = "lft_joint18"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -159.99997, -2.854999, -2.444142 ]
+								hitbox_maxs = [ 0.0, 0.504756, 0.566673 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "lft_joint19"
+								parent_bone = "lft_joint19"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -29.500662, -2.591301, -9.049685 ]
+								hitbox_maxs = [ 60.516853, 1.18453, 0.226822 ]
+							},
+							{
+								_class = "Hitbox"
+								name = "back_ramp"
+								parent_bone = "back_ramp"
+								surface_property = "metalvehicle"
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -55.062176, 0.0, -78.08682 ]
+								hitbox_maxs = [ 55.062157, 35.96929, 0.0 ]
+							},
+						]
+					},
+				]
+			},
+			{
+				_class = "Skeleton"
+				children = 
+				[
+					{
+						_class = "Bone"
+						name = "main_root"
+						children = 
+						[
+							{
+								_class = "Bone"
+								name = "piston_top"
+								origin = [ 49.388397, -96.841156, -202.00533 ]
+								angles = [ 49.81769, -97.48688, -5.733521 ]
+								do_not_discard = true
+							},
+							{
+								_class = "Bone"
+								name = "piston_bot"
+								origin = [ 45.628757, -125.44882, -236.17023 ]
+								angles = [ -49.817696, 82.5131, -174.2665 ]
+								do_not_discard = true
+							},
+							{
+								_class = "Bone"
+								name = "back_rotor"
+								origin = [ 71.27485, 37.778152, -573.8856 ]
+								angles = [ 0.0, -19.504217, 0.0 ]
+								do_not_discard = true
+							},
+							{
+								_class = "Bone"
+								name = "top_rotor"
+								children = 
+								[
+									{
+										_class = "Bone"
+										name = "rotor_base"
+										children = 
+										[
+											{
+												_class = "Bone"
+												name = "rotor_a"
+												children = 
+												[
+													{
+														_class = "Bone"
+														name = "rotor_1"
+														children = 
+														[
+															{
+																_class = "Bone"
+																name = "center_1"
+																children = 
+																[
+																	{
+																		_class = "Bone"
+																		name = "joint4"
+																		origin = [ 199.99901, -0.000259, 0.000023 ]
+																		angles = [ 0.219522, 0.0, -0.000001 ]
+																		do_not_discard = true
+																	},
+																]
+																origin = [ 199.99945, -0.000198, 0.000018 ]
+																angles = [ -0.670662, -0.0, 0.0 ]
+																do_not_discard = true
+															},
+														]
+														origin = [ -0.000038, -0.000198, 0.00001 ]
+														angles = [ -0.000001, 0.0, -0.0 ]
+														do_not_discard = true
+													},
+													{
+														_class = "Bone"
+														name = "right_side_1"
+														children = 
+														[
+															{
+																_class = "Bone"
+																name = "rgt_joint2"
+																children = 
+																[
+																	{
+																		_class = "Bone"
+																		name = "rgt_joint3"
+																		children = 
+																		[
+																			{
+																				_class = "Bone"
+																				name = "rgt_joint4"
+																				origin = [ 159.99884, -0.000412, 0.00002 ]
+																				angles = [ 0.219522, 0.0, -0.000001 ]
+																				do_not_discard = true
+																			},
+																		]
+																		origin = [ 199.99925, -0.000351, 0.000015 ]
+																		angles = [ -0.670662, -0.0, 0.0 ]
+																		do_not_discard = true
+																	},
+																]
+																origin = [ 22.605019, -0.000122, 3.999991 ]
+																angles = [ -2.559174, -0.0, 0.0 ]
+																do_not_discard = true
+															},
+														]
+														origin = [ -22.756674, -0.000015, -0.179186 ]
+														angles = [ 2.559172, 0.0, 0.0 ]
+														do_not_discard = true
+													},
+													{
+														_class = "Bone"
+														name = "left_side_1"
+														children = 
+														[
+															{
+																_class = "Bone"
+																name = "lft_joint2"
+																children = 
+																[
+																	{
+																		_class = "Bone"
+																		name = "lft_joint3"
+																		children = 
+																		[
+																			{
+																				_class = "Bone"
+																				name = "lft_joint4"
+																				origin = [ 159.99884, -0.000381, 0.000031 ]
+																				angles = [ 0.219522, 0.0, -0.000001 ]
+																				do_not_discard = true
+																			},
+																		]
+																		origin = [ 199.99927, -0.000412, 0.000028 ]
+																		angles = [ -0.670662, -0.0, 0.0 ]
+																		do_not_discard = true
+																	},
+																]
+																origin = [ 22.874226, -0.000092, -1.999985 ]
+																angles = [ -2.559174, -0.0, 0.0 ]
+																do_not_discard = true
+															},
+														]
+														origin = [ -22.756674, -0.000015, -0.179186 ]
+														angles = [ 2.559172, 0.0, 0.0 ]
+														do_not_discard = true
+													},
+												]
+												origin = [ 36.129074, -0.000214, 1.899972 ]
+												angles = [ -2.559174, -0.0, 0.0 ]
+												do_not_discard = true
+											},
+											{
+												_class = "Bone"
+												name = "rotor_b"
+												children = 
+												[
+													{
+														_class = "Bone"
+														name = "rotor_2"
+														children = 
+														[
+															{
+																_class = "Bone"
+																name = "center_2"
+																children = 
+																[
+																	{
+																		_class = "Bone"
+																		name = "joint5"
+																		origin = [ -199.99896, 0.000259, -0.000009 ]
+																		angles = [ 0.219524, 0.0, 0.0 ]
+																		do_not_discard = true
+																	},
+																]
+																origin = [ -199.99959, 0.000198, -0.00001 ]
+																angles = [ -0.670661, 0.0, -0.0 ]
+																do_not_discard = true
+															},
+														]
+														origin = [ 0.000034, 0.000198, -0.00001 ]
+														angles = [ 0.000001, -0.0, -0.0 ]
+														do_not_discard = true
+													},
+													{
+														_class = "Bone"
+														name = "right_side_2"
+														children = 
+														[
+															{
+																_class = "Bone"
+																name = "rgt_joint5"
+																children = 
+																[
+																	{
+																		_class = "Bone"
+																		name = "rgt_joint6"
+																		children = 
+																		[
+																			{
+																				_class = "Bone"
+																				name = "rgt_joint7"
+																				origin = [ -159.99872, 0.000427, -0.00002 ]
+																				angles = [ 0.219523, 0.0, 0.0 ]
+																				do_not_discard = true
+																			},
+																		]
+																		origin = [ -199.99901, 0.000336, -0.00001 ]
+																		angles = [ -0.670661, 0.0, -0.0 ]
+																		do_not_discard = true
+																	},
+																]
+																origin = [ -22.688808, 0.000076, -3.999989 ]
+																angles = [ -2.559173, 0.0, 0.0 ]
+																do_not_discard = true
+															},
+														]
+														origin = [ 22.756681, -0.000015, 0.179187 ]
+														angles = [ 2.559174, 0.0, 0.0 ]
+														do_not_discard = true
+													},
+													{
+														_class = "Bone"
+														name = "left_side_2"
+														children = 
+														[
+															{
+																_class = "Bone"
+																name = "lft_joint5"
+																children = 
+																[
+																	{
+																		_class = "Bone"
+																		name = "lft_joint6"
+																		children = 
+																		[
+																			{
+																				_class = "Bone"
+																				name = "lft_joint7"
+																				origin = [ -159.9987, 0.000381, -0.000033 ]
+																				angles = [ 0.219523, 0.0, 0.0 ]
+																				do_not_discard = true
+																			},
+																		]
+																		origin = [ -199.99892, 0.000336, -0.000026 ]
+																		angles = [ -0.670661, 0.0, -0.0 ]
+																		do_not_discard = true
+																	},
+																]
+																origin = [ -22.87423, 0.000137, 1.999988 ]
+																angles = [ -2.559173, 0.0, 0.0 ]
+																do_not_discard = true
+															},
+														]
+														origin = [ 22.756681, -0.000015, 0.179187 ]
+														angles = [ 2.559174, 0.0, 0.0 ]
+														do_not_discard = true
+													},
+												]
+												origin = [ -36.1291, -0.000229, -1.899956 ]
+												angles = [ -3.461454, 0.0, -179.99998 ]
+												do_not_discard = true
+											},
+											{
+												_class = "Bone"
+												name = "rotor_c"
+												children = 
+												[
+													{
+														_class = "Bone"
+														name = "rotor_3"
+														children = 
+														[
+															{
+																_class = "Bone"
+																name = "center_3"
+																children = 
+																[
+																	{
+																		_class = "Bone"
+																		name = "joint6"
+																		origin = [ 199.99937, -0.000183, 0.0 ]
+																		angles = [ 0.21952, 0.0, 0.0 ]
+																		do_not_discard = true
+																	},
+																]
+																origin = [ 199.99979, -0.000137, -0.000025 ]
+																angles = [ -0.670665, -0.0, -0.0 ]
+																do_not_discard = true
+															},
+														]
+														origin = [ -0.000023, -0.000107, 0.0 ]
+														angles = [ 0.000002, 0.0, 0.0 ]
+														do_not_discard = true
+													},
+													{
+														_class = "Bone"
+														name = "right_side_3"
+														children = 
+														[
+															{
+																_class = "Bone"
+																name = "rgt_joint8"
+																children = 
+																[
+																	{
+																		_class = "Bone"
+																		name = "rgt_joint9"
+																		children = 
+																		[
+																			{
+																				_class = "Bone"
+																				name = "rgt_joint10"
+																				origin = [ 159.99939, -0.000351, 0.000031 ]
+																				angles = [ 0.219519, 0.0, 0.0 ]
+																				do_not_discard = true
+																			},
+																		]
+																		origin = [ 199.9997, -0.000259, -0.000027 ]
+																		angles = [ -0.670665, 0.0, -0.0 ]
+																		do_not_discard = true
+																	},
+																]
+																origin = [ 22.688871, -0.000198, 3.999998 ]
+																angles = [ -2.559177, -0.000001, 0.0 ]
+																do_not_discard = true
+															},
+														]
+														origin = [ -22.756687, 0.0, -0.179185 ]
+														angles = [ 2.55917, 0.0, 0.0 ]
+														do_not_discard = true
+													},
+													{
+														_class = "Bone"
+														name = "left_side_3"
+														children = 
+														[
+															{
+																_class = "Bone"
+																name = "lft_joint8"
+																children = 
+																[
+																	{
+																		_class = "Bone"
+																		name = "lft_joint9"
+																		children = 
+																		[
+																			{
+																				_class = "Bone"
+																				name = "lft_joint10"
+																				origin = [ 159.99936, -0.000351, 0.0 ]
+																				angles = [ 0.219519, 0.0, 0.0 ]
+																				do_not_discard = true
+																			},
+																		]
+																		origin = [ 199.99974, -0.000259, -0.00001 ]
+																		angles = [ -0.670665, 0.0, -0.0 ]
+																		do_not_discard = true
+																	},
+																]
+																origin = [ 22.87425, -0.000153, -1.999993 ]
+																angles = [ -2.559177, -0.000001, 0.0 ]
+																do_not_discard = true
+															},
+														]
+														origin = [ -22.756687, 0.0, -0.179185 ]
+														angles = [ 2.55917, 0.0, 0.0 ]
+														do_not_discard = true
+													},
+												]
+												origin = [ 19.70996, -0.000122, -30.338722 ]
+												angles = [ 57.440823, 0.000001, -0.0 ]
+												do_not_discard = true
+											},
+											{
+												_class = "Bone"
+												name = "rotor_d"
+												children = 
+												[
+													{
+														_class = "Bone"
+														name = "rotor_4"
+														children = 
+														[
+															{
+																_class = "Bone"
+																name = "center_4"
+																children = 
+																[
+																	{
+																		_class = "Bone"
+																		name = "joint7"
+																		origin = [ -199.99904, 0.00029, -0.000008 ]
+																		angles = [ 0.219524, -0.0, 0.0 ]
+																		do_not_discard = true
+																	},
+																]
+																origin = [ -199.99959, 0.000183, -0.00002 ]
+																angles = [ -0.670662, 0.0, 0.0 ]
+																do_not_discard = true
+															},
+														]
+														origin = [ 0.000029, 0.000198, -0.000004 ]
+														angles = [ -0.0, 0.0, 0.0 ]
+														do_not_discard = true
+													},
+													{
+														_class = "Bone"
+														name = "right_side_4"
+														children = 
+														[
+															{
+																_class = "Bone"
+																name = "rgt_joint11"
+																children = 
+																[
+																	{
+																		_class = "Bone"
+																		name = "rgt_joint12"
+																		children = 
+																		[
+																			{
+																				_class = "Bone"
+																				name = "rgt_joint13"
+																				origin = [ -159.99889, 0.000427, 0.000031 ]
+																				angles = [ 0.219524, -0.0, 0.0 ]
+																				do_not_discard = true
+																			},
+																		]
+																		origin = [ -199.9992, 0.000366, 0.000037 ]
+																		angles = [ -0.67066, 0.0, 0.0 ]
+																		do_not_discard = true
+																	},
+																]
+																origin = [ -22.688812, 0.000092, -3.999982 ]
+																angles = [ -2.559182, -0.0, 0.0 ]
+																do_not_discard = true
+															},
+														]
+														origin = [ 22.756695, 0.0, 0.179189 ]
+														angles = [ 2.559174, 0.0, 0.0 ]
+														do_not_discard = true
+													},
+													{
+														_class = "Bone"
+														name = "left_side_4"
+														children = 
+														[
+															{
+																_class = "Bone"
+																name = "lft_joint11"
+																children = 
+																[
+																	{
+																		_class = "Bone"
+																		name = "lft_joint12"
+																		children = 
+																		[
+																			{
+																				_class = "Bone"
+																				name = "lft_joint13"
+																				origin = [ -159.99883, 0.000366, 0.000107 ]
+																				angles = [ 0.219524, -0.0, 0.0 ]
+																				do_not_discard = true
+																			},
+																		]
+																		origin = [ -199.99905, 0.000366, 0.000013 ]
+																		angles = [ -0.67066, 0.0, 0.0 ]
+																		do_not_discard = true
+																	},
+																]
+																origin = [ -22.874237, 0.000137, 1.999993 ]
+																angles = [ -2.559182, -0.0, 0.0 ]
+																do_not_discard = true
+															},
+														]
+														origin = [ 22.756695, 0.0, 0.179189 ]
+														angles = [ 2.559174, 0.0, 0.0 ]
+														do_not_discard = true
+													},
+												]
+												origin = [ -19.709974, -0.000214, 30.338757 ]
+												angles = [ 56.538555, 0.0, -179.99998 ]
+												do_not_discard = true
+											},
+											{
+												_class = "Bone"
+												name = "rotor_e"
+												children = 
+												[
+													{
+														_class = "Bone"
+														name = "rotor_5"
+														children = 
+														[
+															{
+																_class = "Bone"
+																name = "center_5"
+																children = 
+																[
+																	{
+																		_class = "Bone"
+																		name = "joint8"
+																		origin = [ 199.99919, -0.000198, 0.000076 ]
+																		angles = [ 0.219519, 0.0, -0.0 ]
+																		do_not_discard = true
+																	},
+																]
+																origin = [ 199.99963, -0.000153, 0.000016 ]
+																angles = [ -0.670651, 0.000001, 0.000001 ]
+																do_not_discard = true
+															},
+														]
+														origin = [ -0.000031, -0.000153, 0.000002 ]
+														angles = [ 0.000008, -0.0, -0.0 ]
+														do_not_discard = true
+													},
+													{
+														_class = "Bone"
+														name = "right_side_5"
+														children = 
+														[
+															{
+																_class = "Bone"
+																name = "rgt_joint14"
+																children = 
+																[
+																	{
+																		_class = "Bone"
+																		name = "rgt_joint15"
+																		children = 
+																		[
+																			{
+																				_class = "Bone"
+																				name = "rgt_joint16"
+																				origin = [ 159.99904, -0.000381, 0.000107 ]
+																				angles = [ 0.219518, 0.0, -0.0 ]
+																				do_not_discard = true
+																			},
+																		]
+																		origin = [ 199.99937, -0.000336, 0.000017 ]
+																		angles = [ -0.670654, 0.000001, 0.000001 ]
+																		do_not_discard = true
+																	},
+																]
+																origin = [ 22.68884, -0.000229, 3.999989 ]
+																angles = [ -2.559175, 0.000001, -0.0 ]
+																do_not_discard = true
+															},
+														]
+														origin = [ -22.756683, -0.000259, -0.17919 ]
+														angles = [ 2.559179, 0.000001, 0.0 ]
+														do_not_discard = true
+													},
+													{
+														_class = "Bone"
+														name = "left_side_5"
+														children = 
+														[
+															{
+																_class = "Bone"
+																name = "lft_joint14"
+																children = 
+																[
+																	{
+																		_class = "Bone"
+																		name = "lft_joint15"
+																		children = 
+																		[
+																			{
+																				_class = "Bone"
+																				name = "lft_joint16"
+																				origin = [ 159.99908, -0.00032, 0.000145 ]
+																				angles = [ 0.219518, 0.0, -0.0 ]
+																				do_not_discard = true
+																			},
+																		]
+																		origin = [ 199.99939, -0.000366, 0.000006 ]
+																		angles = [ -0.670654, 0.000001, 0.000001 ]
+																		do_not_discard = true
+																	},
+																]
+																origin = [ 22.874233, -0.000092, -1.999994 ]
+																angles = [ -2.559175, 0.000001, 0.0 ]
+																do_not_discard = true
+															},
+														]
+														origin = [ -22.75668, -0.000031, -0.179186 ]
+														angles = [ 2.559178, 0.000001, 0.0 ]
+														do_not_discard = true
+													},
+												]
+												origin = [ -16.419119, -0.000183, -32.23868 ]
+												angles = [ 62.559162, 179.99998, 179.99998 ]
+												do_not_discard = true
+											},
+											{
+												_class = "Bone"
+												name = "rotor_f"
+												children = 
+												[
+													{
+														_class = "Bone"
+														name = "rotor_6"
+														children = 
+														[
+															{
+																_class = "Bone"
+																name = "center_6"
+																children = 
+																[
+																	{
+																		_class = "Bone"
+																		name = "joint9"
+																		origin = [ -199.99915, 0.000198, 0.000038 ]
+																		angles = [ 0.219527, 0.0, -0.0 ]
+																		do_not_discard = true
+																	},
+																]
+																origin = [ -199.99976, 0.000183, 0.000043 ]
+																angles = [ -0.670658, 0.0, 0.0 ]
+																do_not_discard = true
+															},
+														]
+														origin = [ 0.000021, 0.000092, 0.000003 ]
+														angles = [ 0.000003, 0.0, -0.0 ]
+														do_not_discard = true
+													},
+													{
+														_class = "Bone"
+														name = "right_side_6"
+														children = 
+														[
+															{
+																_class = "Bone"
+																name = "rgt_joint17"
+																children = 
+																[
+																	{
+																		_class = "Bone"
+																		name = "rgt_joint18"
+																		children = 
+																		[
+																			{
+																				_class = "Bone"
+																				name = "rgt_joint19"
+																				origin = [ -159.99902, 0.000305, 0.0 ]
+																				angles = [ 0.219527, -0.0, -0.0 ]
+																				do_not_discard = true
+																			},
+																		]
+																		origin = [ -199.99933, 0.000305, 0.000016 ]
+																		angles = [ -0.670661, -0.0, 0.0 ]
+																		do_not_discard = true
+																	},
+																]
+																origin = [ -22.688843, 0.000183, -3.999991 ]
+																angles = [ -2.559176, 0.0, -0.0 ]
+																do_not_discard = true
+															},
+														]
+														origin = [ 22.756693, 0.000015, 0.179185 ]
+														angles = [ 2.559174, 0.0, 0.0 ]
+														do_not_discard = true
+													},
+													{
+														_class = "Bone"
+														name = "left_side_6"
+														children = 
+														[
+															{
+																_class = "Bone"
+																name = "lft_joint17"
+																children = 
+																[
+																	{
+																		_class = "Bone"
+																		name = "lft_joint18"
+																		children = 
+																		[
+																			{
+																				_class = "Bone"
+																				name = "lft_joint19"
+																				origin = [ -159.999, 0.000336, 0.0 ]
+																				angles = [ 0.219527, -0.0, -0.0 ]
+																				do_not_discard = true
+																			},
+																		]
+																		origin = [ -199.99924, 0.000259, 0.000016 ]
+																		angles = [ -0.670661, -0.0, 0.0 ]
+																		do_not_discard = true
+																	},
+																]
+																origin = [ -22.87426, 0.000168, 1.999991 ]
+																angles = [ -2.559176, 0.0, -0.0 ]
+																do_not_discard = true
+															},
+														]
+														origin = [ 22.756693, 0.000015, 0.179185 ]
+														angles = [ 2.559174, 0.0, 0.0 ]
+														do_not_discard = true
+													},
+												]
+												origin = [ 16.41914, -0.000076, 32.238724 ]
+												angles = [ 63.461445, 179.99998, 0.000001 ]
+												do_not_discard = true
+											},
+										]
+										origin = [ 0.074907, -10.422455, 0.534663 ]
+										angles = [ 3.78706, -0.027195, 0.091199 ]
+										do_not_discard = true
+									},
+								]
+								origin = [ 0.0, 28.131714, 1.243166 ]
+								angles = [ -0.0, 0.0, 2.530257 ]
+								do_not_discard = true
+							},
+							{
+								_class = "Bone"
+								name = "back_ramp"
+								origin = [ 0.212591, -150.35149, -197.93326 ]
+								angles = [ -0.0, 0.0, 0.0 ]
+								do_not_discard = true
+							},
+							{
+								_class = "Bone"
+								name = "starboard_light"
+								origin = [ -135.39096, -99.45242, -6.103248 ]
+								angles = [ -0.0, 90.00001, 0.0 ]
+								do_not_discard = true
+							},
+							{
+								_class = "Bone"
+								name = "port_light"
+								origin = [ 135.92325, -99.327, -6.550303 ]
+								angles = [ -0.0, -90.00001, 0.0 ]
+								do_not_discard = true
+							},
+							{
+								_class = "Bone"
+								name = "strobe_red"
+								origin = [ 33.99951, 77.19319, -564.2178 ]
+								angles = [ -0.0, 0.0, 0.0 ]
+								do_not_discard = true
+							},
+							{
+								_class = "Bone"
+								name = "port_backlight"
+								origin = [ 41.59925, -60.662148, -378.1318 ]
+								angles = [ -0.0, -90.0, -90.0 ]
+								do_not_discard = true
+							},
+							{
+								_class = "Bone"
+								name = "starboard_backlight"
+								origin = [ -40.533962, -61.213394, -381.14343 ]
+								angles = [ -0.0, -90.0, -90.0 ]
+								do_not_discard = true
+							},
+							{
+								_class = "Bone"
+								name = "engsmokea"
+								origin = [ 61.568943, -40.85466, 152.67572 ]
+								angles = [ -0.0, 0.0, 0.0 ]
+								do_not_discard = true
+							},
+							{
+								_class = "Bone"
+								name = "engsmokeb"
+								origin = [ -61.56895, -40.854614, 152.67577 ]
+								angles = [ -0.0, 0.0, 0.0 ]
+								do_not_discard = true
+							},
+						]
+						origin = [ 0.989677, 179.782, -0.781734 ]
+						angles = [ -0.009776, 0.0797, -0.005037 ]
+						do_not_discard = true
+					},
+				]
+			},
+			{
+				_class = "MaterialGroupList"
+				children = 
+				[
+					{
+						_class = "DefaultMaterialGroup"
+						remaps = 
+						[
+							{
+								from = "materials/models/props_vehicles/helicopter_bladeramp.vmat"
+								to = "materials/atix/helicopter/helicopter_bladeramp.vmat"
+							},
+							{
+								from = "materials/models/props_vehicles/helicopter_rescue.vmat"
+								to = "materials/atix/helicopter/helicopter_rescue.vmat"
+							},
+						]
+						use_global_default = false
+						global_default_material = ""
+					},
+				]
+			},
+		]
+		model_archetype = ""
+		primary_associated_entity = ""
+		document_sub_type = "ModelDocSubType_None"
+	}
+}
