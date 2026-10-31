@@ -445,12 +445,36 @@ function StartKzEndingColorAnimation() {
     Instance.SetNextThink(now);
 }
 
+function HideHudForAllConnectedPlayers() {
+    for (const player of Instance.GetAllPlayerControllers()) {
+        if (!player || !player.IsConnected()) {
+            continue;
+        }
+
+        const pawn = GetPlayerPawn(player);
+        if (!pawn) {
+            continue;
+        }
+
+        Instance.EntFireAtTarget({
+            target: pawn,
+            input: "SetHudVisibility",
+            value: 0
+        });
+    }
+}
+
 function HandleNormalKzSuccess(player, successCount, config) {
     const requiredSuccesses = Math.max(1, config.consecutiveSuccesses || 1);
     if (successCount >= requiredSuccesses) {
         for (const connectedPlayer of Instance.GetAllPlayerControllers()) {
             if (!connectedPlayer || !connectedPlayer.IsConnected()) {
                 continue;
+            }
+
+            const currentMoney = connectedPlayer.GetMoneySpendableNow();
+            if (currentMoney !== 0) {
+                connectedPlayer.AddMoneySpendableNow(-currentMoney);
             }
 
             const pawn = GetPlayerPawn(connectedPlayer);
@@ -465,6 +489,8 @@ function HandleNormalKzSuccess(player, successCount, config) {
                 pawn.DestroyWeapon(knife);
             }
         }
+
+        HideHudForAllConnectedPlayers();
 
         Instance.EntFireAtName({
             name: NORMAL_KZ_SUCCESS_40_RISE_SOUND,
