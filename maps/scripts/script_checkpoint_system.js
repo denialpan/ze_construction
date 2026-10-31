@@ -1,4 +1,4 @@
-import { Entity, Instance } from "cs_script/point_script";
+import { CSGearSlot, Entity, Instance } from "cs_script/point_script";
 
 const CHECKPOINT_CONFIGS = {
     secret_kz: {
@@ -448,6 +448,24 @@ function StartKzEndingColorAnimation() {
 function HandleNormalKzSuccess(player, successCount, config) {
     const requiredSuccesses = Math.max(1, config.consecutiveSuccesses || 1);
     if (successCount >= requiredSuccesses) {
+        for (const connectedPlayer of Instance.GetAllPlayerControllers()) {
+            if (!connectedPlayer || !connectedPlayer.IsConnected()) {
+                continue;
+            }
+
+            const pawn = GetPlayerPawn(connectedPlayer);
+            if (!pawn) {
+                continue;
+            }
+
+            pawn.DestroyWeapons();
+
+            const knife = pawn.FindWeaponBySlot(CSGearSlot.KNIFE);
+            if (knife && knife.IsValid()) {
+                pawn.DestroyWeapon(knife);
+            }
+        }
+
         Instance.EntFireAtName({
             name: NORMAL_KZ_SUCCESS_40_RISE_SOUND,
             input: "StopSound"
