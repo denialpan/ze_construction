@@ -21,7 +21,7 @@ const CHECKPOINT_CONFIGS = {
         failureResetInput: "normal_kz_failure_reset",
         showTimer: false,
         timerLimit: 0,
-        consecutiveSuccesses: 3,
+        consecutiveSuccesses: 50,
 		conflicts: []
     }
 };
@@ -41,8 +41,8 @@ const CHAT_COLOR_PREFIX = "\x03";
 const JUMP_TRACK_WINDOW = 5;
 const JUMP_POSITION_POLL_INTERVAL = 0.005;
 const AVERAGE_CHAT_SUCCESS_MARKS = new Set([5, 10, 15, 20, 30, 40, 50]);
-const NORMAL_KZ_KILL_SUCCESS_COUNT = 2;
-const NORMAL_KZ_COUNTDOWN_SUCCESS_COUNT = 2;
+const NORMAL_KZ_KILL_SUCCESS_COUNT = 40;
+const NORMAL_KZ_COUNTDOWN_SUCCESS_COUNT = 40;
 const NORMAL_KZ_SUCCESS_40_RISE_SOUND = "sound_normal_kz_success_40_rise";
 const NORMAL_KZ_FAILURE_KILL_SOUND = "sound_normal_kz_failure_kill_awp";
 const ITEMS_SCRIPT_ENTITY_NAME = "script_items";
@@ -445,25 +445,6 @@ function StartKzEndingColorAnimation() {
     Instance.SetNextThink(now);
 }
 
-function HideHudForAllConnectedPlayers() {
-    for (const player of Instance.GetAllPlayerControllers()) {
-        if (!player || !player.IsConnected()) {
-            continue;
-        }
-
-        const pawn = GetPlayerPawn(player);
-        if (!pawn) {
-            continue;
-        }
-
-        Instance.EntFireAtTarget({
-            target: pawn,
-            input: "SetHudVisibility",
-            value: 0
-        });
-    }
-}
-
 function HandleNormalKzSuccess(player, successCount, config) {
     const requiredSuccesses = Math.max(1, config.consecutiveSuccesses || 1);
     if (successCount >= requiredSuccesses) {
@@ -489,8 +470,6 @@ function HandleNormalKzSuccess(player, successCount, config) {
                 pawn.DestroyWeapon(knife);
             }
         }
-
-        HideHudForAllConnectedPlayers();
 
         Instance.EntFireAtName({
             name: NORMAL_KZ_SUCCESS_40_RISE_SOUND,
