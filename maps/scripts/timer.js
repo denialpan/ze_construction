@@ -25,7 +25,7 @@ const TIMER_CONFIGS = {
     },
 	
 	ending_kz_restart_round: {
-		duration: 37,
+		duration: 33,
         textEntity: "text_ending_kz_restart_round",
         finishTarget: "button_ending_kz_restart_round",
         finishInput: "Press"
