@@ -74,6 +74,7 @@ let kzCountdownHud = null;
 let kzCountdownState = null;
 let kzCountdownPulseClass = null;
 let kzEndingColorAnimationState = null;
+let normalKzWinnerSlot = null;
 
 function GetPlayerController(entity) {
     if (!entity) {
@@ -448,6 +449,17 @@ function StartKzEndingColorAnimation() {
 function HandleNormalKzSuccess(player, successCount, config) {
     const requiredSuccesses = Math.max(1, config.consecutiveSuccesses || 1);
     if (successCount >= requiredSuccesses) {
+        normalKzWinnerSlot = player.GetPlayerSlot();
+
+        const completingPawn = GetPlayerPawn(player);
+        if (completingPawn) {
+            Instance.EntFireAtTarget({
+                target: completingPawn,
+                input: "AddContext",
+                value: "kz_ending_winner:1"
+            });
+        }
+
         for (const connectedPlayer of Instance.GetAllPlayerControllers()) {
             if (!connectedPlayer || !connectedPlayer.IsConnected()) {
                 continue;
@@ -1002,6 +1014,7 @@ function ResetAllCheckpointState() {
     kzCountdownState = null;
     kzCountdownPulseClass = null;
     kzEndingColorAnimationState = null;
+    normalKzWinnerSlot = null;
 
     checkpointHud = null;
     kzCountdownHud = null;
@@ -1037,7 +1050,18 @@ for (const [systemId, config] of Object.entries(CHECKPOINT_CONFIGS)) {
     }
 }
 
-Instance.OnScriptInput("instant_round_restart", () => {
+Instance.OnScriptInput("instant_round_restart", ({ activator }) => {
+    const activatingPlayer = GetPlayerController(activator);
+    if (
+        activatingPlayer &&
+        activatingPlayer.GetPlayerSlot() !== normalKzWinnerSlot
+    ) {
+        Instance.Msg(
+            `ending_kz.js: ignored instant_round_restart from non-winner player ${activatingPlayer.GetPlayerSlot()}`
+        );
+        return;
+    }
+
     Instance.ServerCommand("mp_restartgame 1");
 });
 
