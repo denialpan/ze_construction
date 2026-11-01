@@ -22,7 +22,15 @@ const TIMER_CONFIGS = {
         textEntity: "text_floor_2_doors_timer",
         finishTarget: "relay_open_floor_2_doors",
         finishInput: "Trigger"
-    }
+    },
+	
+	ending_kz_restart_round: {
+		duration: 37,
+        textEntity: "text_ending_kz_restart_round",
+        finishTarget: "button_ending_kz_restart_round",
+        finishInput: "Press"
+	}
+	
 };
 
 const activeTimers = new Map();

@@ -1058,6 +1058,10 @@ for (const [systemId, config] of Object.entries(CHECKPOINT_CONFIGS)) {
     }
 }
 
+Instance.OnScriptInput("instant_round_restart", () => {
+    Instance.ServerCommand("mp_restartgame 1");
+});
+
 Instance.OnPlayerJump((event) => {
     TrackPlayerJump(event.player);
 });
