@@ -11,8 +11,6 @@
     vertical-align: center;
     margin-top: 145px;
 
-    background-color: #080b0dcc;
-    border: 1px solid #7fd7ff88;
     padding: 5px 14px;
 
     transition-property: opacity, transform, border, background-color;
@@ -25,16 +23,6 @@
         opacity: 0;
         transform: translateY(8px);
     }
-
-    &.TimerFailure {
-        border: 1px solid #ff5b4daa;
-        background-color: #190707dd;
-    }
-
-    &.TimerSuccess {
-        border: 1px solid #78ff9caa;
-        background-color: #06140add;
-    }
 }
 
 #timer_text {
@@ -43,7 +31,7 @@
     horizontal-align: center;
     vertical-align: center;
     text-align: center;
-    font-family: Stratum2;
+    font-family: notomono;
     font-size: 30px;
     color: #d8f4ff;
     text-shadow: 0px 1px 4px 2.0 #000000dd;
