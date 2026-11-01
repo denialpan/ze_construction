@@ -36,7 +36,7 @@ const KZ_COUNTDOWN_DIALOG_VARIABLE = "kz_countdown_time";
 const KZ_COUNTDOWN_DURATION = 35;
 const ROUND_RESTART_DELAY = 5;
 const FAILURE_HOLD_TIME = 2;
-const SUCCESS_HOLD_TIME = 5;
+const SUCCESS_HOLD_TIME = 10;
 const CHAT_COLOR_PREFIX = "\x03";
 const JUMP_TRACK_WINDOW = 5;
 const JUMP_POSITION_POLL_INTERVAL = 0.005;
@@ -45,6 +45,7 @@ const NORMAL_KZ_KILL_SUCCESS_COUNT = 40;
 const NORMAL_KZ_COUNTDOWN_SUCCESS_COUNT = 40;
 const NORMAL_KZ_SUCCESS_40_RISE_SOUND = "sound_normal_kz_success_40_rise";
 const NORMAL_KZ_FAILURE_KILL_SOUND = "sound_normal_kz_failure_kill_awp";
+const SECRET_KZ_BOOST_CONTEXT = "allow_kz_secret_boost:1";
 const ITEMS_SCRIPT_ENTITY_NAME = "script_items";
 const RESET_SNIPER_LASER_INPUT = "reset_sniper_laser";
 const KZ_HELICOPTER_ENTITY_NAME = "train_kz_helicopter";
@@ -732,6 +733,22 @@ function CompleteCheckpointSystem(systemId, config, player) {
     if (IsTimerEnabled(config)) {
         HoldTimer(runKey, playerSlot, "TimerSuccess", SUCCESS_HOLD_TIME);
     }
+
+    if (
+        systemId === "secret_kz" &&
+        config.timerLimit > 0 &&
+        elapsed < config.timerLimit
+    ) {
+        const pawn = GetPlayerPawn(player);
+        if (pawn) {
+            Instance.EntFireAtTarget({
+                target: pawn,
+                input: "AddContext",
+                value: SECRET_KZ_BOOST_CONTEXT
+            });
+        }
+    }
+
     ResetPlayerProgress(runKey);
     const success = AdvanceSuccessCount(runKey, config, jumpDistance);
     Instance.Msg(`ending_kz.js: player ${playerSlot} completed ${systemId} success_${success.count} in ${FormatTime(elapsed)}`);
