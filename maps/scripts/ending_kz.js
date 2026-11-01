@@ -3,12 +3,13 @@ import { CSGearSlot, Entity, Instance } from "cs_script/point_script";
 const CHECKPOINT_CONFIGS = {
     secret_kz: {
         inputPrefix: "secret_kz_checkpoint_",
-        finalCheckpoint: 8,
+        finalCheckpoint: 9,
         successRelayPrefix: "relay_secret_kz_success_",
         failureRelay: "relay_secret_kz_failure",
         failureResetInput: "secret_kz_failure_reset",
         showTimer: true,
         timerLimit: 30,
+        kz_track_jump_distance: false,
         consecutiveSuccesses: 1,
         conflicts: ["normal_kz"]
     },
@@ -21,6 +22,7 @@ const CHECKPOINT_CONFIGS = {
         failureResetInput: "normal_kz_failure_reset",
         showTimer: false,
         timerLimit: 0,
+        kz_track_jump_distance: true,
         consecutiveSuccesses: 50,
 		conflicts: []
     }
@@ -380,15 +382,22 @@ function IsConsecutiveSuccessInProgress(runKey) {
 function AdvanceSuccessCount(runKey, config, jumpDistance) {
     const requiredSuccesses = Math.max(1, config.consecutiveSuccesses || 1);
     const nextSuccessCount = (successCountByRun.get(runKey) || 0) + 1;
-    const nextDistanceSum = (successDistanceByRun.get(runKey) || 0) + Math.max(0, jumpDistance || 0);
-    const averageDistance = nextDistanceSum / nextSuccessCount;
+    const trackJumpDistance = config.kz_track_jump_distance === true;
+    const nextDistanceSum = trackJumpDistance
+        ? (successDistanceByRun.get(runKey) || 0) + Math.max(0, jumpDistance || 0)
+        : 0;
+    const averageDistance = trackJumpDistance ? nextDistanceSum / nextSuccessCount : 0;
 
     if (nextSuccessCount >= requiredSuccesses) {
         successCountByRun.delete(runKey);
         successDistanceByRun.delete(runKey);
     } else {
         successCountByRun.set(runKey, nextSuccessCount);
-        successDistanceByRun.set(runKey, nextDistanceSum);
+        if (trackJumpDistance) {
+            successDistanceByRun.set(runKey, nextDistanceSum);
+        } else {
+            successDistanceByRun.delete(runKey);
+        }
     }
 
     return {
@@ -729,7 +738,9 @@ function CompleteCheckpointSystem(systemId, config, player) {
     }
 
     const elapsed = IsTimerEnabled(config) ? StopTimer(runKey) : 0;
-    const jumpDistance = GetJumpDistanceForCompletion(runKey, player);
+    const jumpDistance = config.kz_track_jump_distance === true
+        ? GetJumpDistanceForCompletion(runKey, player)
+        : 0;
     if (IsTimerEnabled(config)) {
         HoldTimer(runKey, playerSlot, "TimerSuccess", SUCCESS_HOLD_TIME);
     }
@@ -752,7 +763,9 @@ function CompleteCheckpointSystem(systemId, config, player) {
     ResetPlayerProgress(runKey);
     const success = AdvanceSuccessCount(runKey, config, jumpDistance);
     Instance.Msg(`ending_kz.js: player ${playerSlot} completed ${systemId} success_${success.count} in ${FormatTime(elapsed)}`);
-    PrintSuccessChat(player, success.count, jumpDistance, success.averageDistance);
+    if (config.kz_track_jump_distance === true) {
+        PrintSuccessChat(player, success.count, jumpDistance, success.averageDistance);
+    }
     FireSuccessRelay(config, player, success.count);
     if (systemId === "normal_kz") {
         HandleNormalKzSuccess(player, success.count, config);
@@ -837,7 +850,10 @@ function TouchCheckpoint(systemId, checkpointNumber, activator) {
         StartTimer(runKey, systemId, player);
     }
 
-    if (checkpointNumber === config.finalCheckpoint - 1) {
+    if (
+        config.kz_track_jump_distance === true &&
+        checkpointNumber === config.finalCheckpoint - 1
+    ) {
         ArmJumpTracking(runKey, systemId, player);
     }
 
@@ -848,7 +864,11 @@ function TouchCheckpoint(systemId, checkpointNumber, activator) {
         }
 
         completionPendingByRun.add(runKey);
-        if (jumpStartByRun.has(runKey) && !jumpDistanceByRun.has(runKey)) {
+        if (
+            config.kz_track_jump_distance === true &&
+            jumpStartByRun.has(runKey) &&
+            !jumpDistanceByRun.has(runKey)
+        ) {
             Instance.Msg(`ending_kz.js: player ${playerSlot} waiting for ${systemId} landing measurement`);
             return;
         }
