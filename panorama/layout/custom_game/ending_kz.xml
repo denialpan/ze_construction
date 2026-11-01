@@ -1,6 +1,6 @@
 <root>
     <styles>
-        <include src="file://{resources}/styles/custom_game/script_checkpoint_system.css" />
+        <include src="file://{resources}/styles/custom_game/ending_kz.css" />
     </styles>
 
     <Panel class="Root">

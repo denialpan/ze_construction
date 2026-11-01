@@ -138,7 +138,7 @@ function SetTimerText(playerSlot, seconds) {
 function ShowTimer(playerSlot) {
     const layout = GetCheckpointHud();
     if (!layout) {
-        Instance.Msg(`script_checkpoint_system.js: missing custom_hud_layout named ${HUD_NAME}`);
+        Instance.Msg(`ending_kz.js: missing custom_hud_layout named ${HUD_NAME}`);
         return;
     }
 
@@ -257,7 +257,7 @@ function ClearKzCountdownHud() {
 
 function StartKzCountdown(player) {
     if (!GetKzCountdownHud()) {
-        Instance.Msg(`script_checkpoint_system.js: missing custom_hud_layout named ${KZ_COUNTDOWN_HUD_NAME}`);
+        Instance.Msg(`ending_kz.js: missing custom_hud_layout named ${KZ_COUNTDOWN_HUD_NAME}`);
         return;
     }
 
@@ -362,7 +362,7 @@ function ArmJumpTracking(runKey, systemId, player) {
     });
     jumpStartByRun.delete(runKey);
     jumpDistanceByRun.delete(runKey);
-    Instance.Msg(`script_checkpoint_system.js: player ${playerSlot} armed ${systemId} jump tracking`);
+    Instance.Msg(`ending_kz.js: player ${playerSlot} armed ${systemId} jump tracking`);
     Instance.SetNextThink(Instance.GetGameTime());
 }
 
@@ -397,7 +397,7 @@ function AdvanceSuccessCount(runKey, config, jumpDistance) {
 
 function FireSuccessRelay(config, player, successCount) {
     if (!config.successRelayPrefix) {
-        Instance.Msg("script_checkpoint_system.js: missing successRelayPrefix");
+        Instance.Msg("ending_kz.js: missing successRelayPrefix");
         return;
     }
 
@@ -655,7 +655,7 @@ function FailCheckpointSystem(systemId, config, player, reason) {
         HoldTimer(runKey, playerSlot, "TimerFailure", FAILURE_HOLD_TIME);
     }
 
-    Instance.Msg(`script_checkpoint_system.js: player ${playerSlot} failed ${systemId}${reason ? `; ${reason}` : ""}`);
+    Instance.Msg(`ending_kz.js: player ${playerSlot} failed ${systemId}${reason ? `; ${reason}` : ""}`);
     FireRelay(config.failureRelay, player);
     if (systemId === "normal_kz") {
         HandleNormalKzFailure(player, successCount);
@@ -683,13 +683,13 @@ function GetBlockingActiveConflict(systemId, playerSlot) {
 function FailureReset(systemId, activator) {
     const config = CHECKPOINT_CONFIGS[systemId];
     if (!config) {
-        Instance.Msg(`script_checkpoint_system.js: missing checkpoint config "${systemId}"`);
+        Instance.Msg(`ending_kz.js: missing checkpoint config "${systemId}"`);
         return;
     }
 
     const player = GetPlayerController(activator);
     if (!player) {
-        Instance.Msg(`script_checkpoint_system.js: ${systemId} failure reset needs a player activator`);
+        Instance.Msg(`ending_kz.js: ${systemId} failure reset needs a player activator`);
         return;
     }
 
@@ -699,11 +699,11 @@ function FailureReset(systemId, activator) {
 
     if (currentCheckpoint === 0) {
         if (IsConsecutiveSuccessInProgress(runKey)) {
-            Instance.Msg(`script_checkpoint_system.js: player ${playerSlot} ignored ${systemId} failure reset; waiting for checkpoint_1`);
+            Instance.Msg(`ending_kz.js: player ${playerSlot} ignored ${systemId} failure reset; waiting for checkpoint_1`);
             return;
         }
 
-        Instance.Msg(`script_checkpoint_system.js: player ${playerSlot} ignored ${systemId} failure reset; not started`);
+        Instance.Msg(`ending_kz.js: player ${playerSlot} ignored ${systemId} failure reset; not started`);
         return;
     }
 
@@ -714,7 +714,7 @@ function EnterCheckpointVolume(systemId, checkpointNumber, playerSlot) {
     const config = CHECKPOINT_CONFIGS[systemId];
 
     if (config && checkpointNumber === config.finalCheckpoint - 1) {
-        Instance.Msg(`script_checkpoint_system.js: player ${playerSlot} entered ${systemId} second-last volume`);
+        Instance.Msg(`ending_kz.js: player ${playerSlot} entered ${systemId} second-last volume`);
     }
 }
 
@@ -724,7 +724,7 @@ function ExitCheckpointVolume(systemId, checkpointNumber, activator) {
         return;
     }
 
-    Instance.Msg(`script_checkpoint_system.js: player ${player.GetPlayerSlot()} exited ${systemId} checkpoint_${checkpointNumber}`);
+    Instance.Msg(`ending_kz.js: player ${player.GetPlayerSlot()} exited ${systemId} checkpoint_${checkpointNumber}`);
 }
 
 function CompleteCheckpointSystem(systemId, config, player) {
@@ -743,7 +743,7 @@ function CompleteCheckpointSystem(systemId, config, player) {
     }
     ResetPlayerProgress(runKey);
     const success = AdvanceSuccessCount(runKey, config, jumpDistance);
-    Instance.Msg(`script_checkpoint_system.js: player ${playerSlot} completed ${systemId} success_${success.count} in ${FormatTime(elapsed)}`);
+    Instance.Msg(`ending_kz.js: player ${playerSlot} completed ${systemId} success_${success.count} in ${FormatTime(elapsed)}`);
     PrintSuccessChat(player, success.count, jumpDistance, success.averageDistance);
     FireSuccessRelay(config, player, success.count);
     if (systemId === "normal_kz") {
@@ -764,17 +764,17 @@ function QueueCheckpointCompletion(systemId, config, player) {
 function TouchCheckpoint(systemId, checkpointNumber, activator) {
     const config = CHECKPOINT_CONFIGS[systemId];
     if (!config) {
-        Instance.Msg(`script_checkpoint_system.js: missing checkpoint config "${systemId}"`);
+        Instance.Msg(`ending_kz.js: missing checkpoint config "${systemId}"`);
         return;
     }
 
-    Instance.Msg(`script_checkpoint_system.js: received ${systemId} checkpoint_${checkpointNumber}`);
+    Instance.Msg(`ending_kz.js: received ${systemId} checkpoint_${checkpointNumber}`);
 
     const player = GetPlayerController(activator);
     if (!player) {
         const activatorName = activator && typeof activator.GetEntityName === "function" ? activator.GetEntityName() : "none";
         const activatorClass = activator && typeof activator.GetClassName === "function" ? activator.GetClassName() : "none";
-        Instance.Msg(`script_checkpoint_system.js: ${systemId} checkpoint_${checkpointNumber} needs a player activator; activator=${activatorName} class=${activatorClass}`);
+        Instance.Msg(`ending_kz.js: ${systemId} checkpoint_${checkpointNumber} needs a player activator; activator=${activatorName} class=${activatorClass}`);
         return;
     }
 
@@ -786,17 +786,17 @@ function TouchCheckpoint(systemId, checkpointNumber, activator) {
     if (currentCheckpoint === 0) {
         if (checkpointNumber !== 1) {
             if (IsConsecutiveSuccessInProgress(runKey)) {
-                Instance.Msg(`script_checkpoint_system.js: player ${playerSlot} ignored ${systemId} checkpoint_${checkpointNumber}; waiting for checkpoint_1`);
+                Instance.Msg(`ending_kz.js: player ${playerSlot} ignored ${systemId} checkpoint_${checkpointNumber}; waiting for checkpoint_1`);
                 return;
             }
 
-            Instance.Msg(`script_checkpoint_system.js: player ${playerSlot} ignored ${systemId} checkpoint_${checkpointNumber}; not started`);
+            Instance.Msg(`ending_kz.js: player ${playerSlot} ignored ${systemId} checkpoint_${checkpointNumber}; not started`);
             return;
         }
 
         const blockingConflict = GetBlockingActiveConflict(systemId, playerSlot);
         if (blockingConflict) {
-            Instance.Msg(`script_checkpoint_system.js: player ${playerSlot} ignored ${systemId}; active ${blockingConflict} has priority`);
+            Instance.Msg(`ending_kz.js: player ${playerSlot} ignored ${systemId}; active ${blockingConflict} has priority`);
             return;
         }
     }
@@ -807,12 +807,12 @@ function TouchCheckpoint(systemId, checkpointNumber, activator) {
         if (IsTimerEnabled(config)) {
             StartTimer(runKey, systemId, player);
         }
-        Instance.Msg(`script_checkpoint_system.js: player ${playerSlot} restarted ${systemId} at checkpoint_1`);
+        Instance.Msg(`ending_kz.js: player ${playerSlot} restarted ${systemId} at checkpoint_1`);
         return;
     }
 
     if (checkpointNumber <= currentCheckpoint) {
-        Instance.Msg(`script_checkpoint_system.js: player ${playerSlot} ignored previous ${systemId} checkpoint_${checkpointNumber}`);
+        Instance.Msg(`ending_kz.js: player ${playerSlot} ignored previous ${systemId} checkpoint_${checkpointNumber}`);
         return;
     }
 
@@ -823,7 +823,7 @@ function TouchCheckpoint(systemId, checkpointNumber, activator) {
 
     EnterCheckpointVolume(systemId, checkpointNumber, playerSlot);
     progressByRun.set(runKey, checkpointNumber);
-    Instance.Msg(`script_checkpoint_system.js: player ${playerSlot} reached ${systemId} checkpoint_${checkpointNumber}`);
+    Instance.Msg(`ending_kz.js: player ${playerSlot} reached ${systemId} checkpoint_${checkpointNumber}`);
 
     if (checkpointNumber === 1 && IsTimerEnabled(config)) {
         StartTimer(runKey, systemId, player);
@@ -835,13 +835,13 @@ function TouchCheckpoint(systemId, checkpointNumber, activator) {
 
     if (checkpointNumber === config.finalCheckpoint) {
         if (completionPendingByRun.has(runKey)) {
-            Instance.Msg(`script_checkpoint_system.js: player ${playerSlot} ignored duplicate ${systemId} completion`);
+            Instance.Msg(`ending_kz.js: player ${playerSlot} ignored duplicate ${systemId} completion`);
             return;
         }
 
         completionPendingByRun.add(runKey);
         if (jumpStartByRun.has(runKey) && !jumpDistanceByRun.has(runKey)) {
-            Instance.Msg(`script_checkpoint_system.js: player ${playerSlot} waiting for ${systemId} landing measurement`);
+            Instance.Msg(`ending_kz.js: player ${playerSlot} waiting for ${systemId} landing measurement`);
             return;
         }
 
@@ -869,7 +869,7 @@ function TrackPlayerJump(pawn) {
 
         jumpStartByRun.set(runKey, position);
         jumpDistanceByRun.delete(runKey);
-        Instance.Msg(`script_checkpoint_system.js: player ${playerSlot} started ${state.systemId} jump measurement`);
+        Instance.Msg(`ending_kz.js: player ${playerSlot} started ${state.systemId} jump measurement`);
     }
 }
 
@@ -899,7 +899,7 @@ function TrackPlayerLand(pawn) {
         const distance = GetHorizontalDistance(startPosition, position);
         jumpDistanceByRun.set(runKey, distance);
         armedJumpByRun.delete(runKey);
-        Instance.Msg(`script_checkpoint_system.js: player ${playerSlot} landed ${state.systemId} jump ${distance.toFixed(3)} units`);
+        Instance.Msg(`ending_kz.js: player ${playerSlot} landed ${state.systemId} jump ${distance.toFixed(3)} units`);
 
         const config = CHECKPOINT_CONFIGS[state.systemId];
         if (completionPendingByRun.has(runKey) && config && (progressByRun.get(runKey) || 0) === config.finalCheckpoint) {
@@ -946,7 +946,7 @@ function TimerThink() {
             armedJumpByRun.delete(runKey);
             jumpStartByRun.delete(runKey);
             jumpDistanceByRun.delete(runKey);
-            Instance.Msg(`script_checkpoint_system.js: player ${state.playerSlot} ${state.systemId} jump tracking expired`);
+            Instance.Msg(`ending_kz.js: player ${state.playerSlot} ${state.systemId} jump tracking expired`);
         } else {
             if (now >= state.nextPositionPoll) {
                 const pawn = GetPlayerPawn(state.player);
@@ -1037,7 +1037,7 @@ function ResetAllCheckpointState() {
         countdownLayout.Reset();
     }
 
-    Instance.Msg("script_checkpoint_system.js: reset all checkpoint state");
+    Instance.Msg("ending_kz.js: reset all checkpoint state");
 }
 
 for (const [systemId, config] of Object.entries(CHECKPOINT_CONFIGS)) {
