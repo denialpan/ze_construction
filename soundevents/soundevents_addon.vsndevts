@@ -483,5 +483,43 @@
             ],
         ]
     }
+	
+	d3.ending_credits_ffa_warmup = 
+    {
+        type = "csgo_mega"
+        volume = 1
+        pitch = 1.000000
+        vsnd_files_track_01 = "sounds/ending_credits_ffa_warmup.vsnd"
+        restrict_source_reverb = true
+		disable_volume_culling = true
+		position_relative_to_player = true
+        use_distance_unfiltered_stereo_mapping_curve = true
+        distance_unfiltered_stereo_mapping_curve = 
+        [
+            [
+                0, 1, 0, 0,
+                0, 0,
+            ],
+        ]
+    }
+	
+	d3.ending_credits_ffa_start = 
+    {
+        type = "csgo_mega"
+        volume = 1
+        pitch = 1.000000
+        vsnd_files_track_01 = "sounds/ending_credits_ffa_start.vsnd"
+        restrict_source_reverb = true
+		disable_volume_culling = true
+		position_relative_to_player = true
+        use_distance_unfiltered_stereo_mapping_curve = true
+        distance_unfiltered_stereo_mapping_curve = 
+        [
+            [
+                0, 1, 0, 0,
+                0, 0,
+            ],
+        ]
+    }
 
 }
