@@ -1,0 +1,13 @@
+<root>
+    <styles>
+        <include src="file://{resources}/styles/custom_game/ending_credits_ffa.css" />
+    </styles>
+
+    <Panel class="Root">
+        <Panel id="ending_credits_ffa_hud" class="Dismissed">
+            <Label id="ending_credits_ffa_odometer_text" text="{s:ending_credits_ffa_odometer}" />
+            <Label id="ending_credits_ffa_upper_text" text="{s:ending_credits_ffa_upper}" />
+            <Label id="ending_credits_ffa_countdown" text="{s:ending_credits_ffa_time}" />
+        </Panel>
+    </Panel>
+</root>

@@ -1,0 +1,70 @@
+.Root {
+    width: 100%;
+    height: 100%;
+}
+
+#ending_credits_ffa_hud {
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+
+    transition-property: opacity;
+    transition-duration: .12s;
+    transition-timing-function: ease-out;
+
+    &.Dismissed {
+        opacity: 0;
+    }
+}
+
+#ending_credits_ffa_odometer_text,
+#ending_credits_ffa_upper_text,
+#ending_credits_ffa_countdown {
+    width: 600px;
+    height: 54px;
+    horizontal-align: center;
+    vertical-align: center;
+    text-align: center;
+    font-family: Stratum2;
+    color: #ffffff;
+    text-shadow: 0px 1px 4px 2.0 #000000dd;
+    opacity: 1;
+    visibility: visible;
+
+    &.Dismissed {
+        opacity: 0;
+        visibility: collapse;
+    }
+}
+
+#ending_credits_ffa_odometer_text {
+    margin-bottom: 450px;
+    font-family: notomono;
+    font-size: 38px;
+
+    transition-property: opacity;
+    transition-duration: .12s;
+    transition-timing-function: ease-out;
+}
+
+#ending_credits_ffa_upper_text {
+    margin-bottom: 175px;
+    font-size: 30px;
+}
+
+#ending_credits_ffa_countdown {
+	color: #e3c232;
+    margin-top: -100px;
+    font-family: notomono;
+    font-size: 42px;
+    transform-origin: 50% 50%;
+    transform: translateY(10px) scale3d(1, 1, 1);
+
+    transition-property: transform;
+    transition-duration: .2s;
+    transition-timing-function: ease-in-out;
+
+    &.SecondTransition {
+        transform: translateY(10px) scale3d(1.238, 1.238, 1);
+    }
+}
