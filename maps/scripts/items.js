@@ -1,19 +1,37 @@
 import { Instance } from "cs_script/point_script";
 
-const SNIPER_ENTITY_NAME = "sniper";
-const SNIPER_CLASS_NAME = "weapon_awp";
-const LASER_ENTITY_NAME = "sniper_laser";
+const TRACKED_ITEM_CONFIGS = [
+    {
+        key: "sniper",
+        entityName: "sniper_item",
+        className: "weapon_awp",
+        laserName: "sniper_laser_1"
+    },
+    {
+        key: "bomb",
+        entityName: "bomb_item",
+        className: "weapon_c4",
+        laserName: "sniper_laser_2"
+    }
+];
 const HELICOPTER_LASER_ENTITY_NAME = "helicopter_laser";
 const LASER_UPDATE_INTERVAL = 0.005;
 const HELICOPTER_LASER_FOCUS_LERP_TIME = 0.15;
 
-let sniperWeapons = [];
-let sniperHolders = new Map();
-let sniperLaser = undefined;
-let sniperLaserDefaultTransform = undefined;
-let sniperLaserAtDefault = true;
-let debugActiveWeapon = undefined;
-let debugActiveDescription = "";
+const trackedItemStates = new Map(TRACKED_ITEM_CONFIGS.map((config) => [
+    config.key,
+    {
+        config,
+        weapons: [],
+        holders: new Map(),
+        laser: undefined,
+        laserDefaultTransform: undefined,
+        laserAtDefault: true,
+        debugActiveWeapon: undefined,
+        debugActiveDescription: ""
+    }
+]));
+const sniperItemState = trackedItemStates.get("sniper");
 let helicopterLaserActive = false;
 let helicopterLaserParent = undefined;
 let helicopterLaserTarget = undefined;
@@ -41,57 +59,78 @@ function GetPlayerController(entity) {
     return undefined;
 }
 
-function RefreshSnipers() {
-    sniperWeapons = Instance.FindEntitiesByName(SNIPER_ENTITY_NAME).filter((entity) => {
+function RefreshTrackedItems(state) {
+    const { config } = state;
+    state.weapons = Instance.FindEntitiesByName(config.entityName).filter((entity) => {
         return entity
             && entity.IsValid()
             && typeof entity.GetClassName === "function"
-            && entity.GetClassName() === SNIPER_CLASS_NAME;
+            && entity.GetClassName() === config.className;
     });
 
-    Instance.Msg(`items.js: found ${sniperWeapons.length} named sniper AWP entities.`);
-    RefreshSniperLaser();
-    RefreshSniperHolders();
+    Instance.Msg(
+        `items.js: found ${state.weapons.length} ${config.className} entities named ${config.entityName}.`
+    );
+    RefreshTrackedLaser(state);
+    RefreshTrackedHolders(state);
 }
 
-function RefreshSniperLaser() {
-    sniperLaser = Instance.FindEntitiesByName(LASER_ENTITY_NAME)[0];
+function RefreshAllTrackedItems() {
+    for (const state of trackedItemStates.values()) {
+        RefreshTrackedItems(state);
+    }
+}
 
-    if (!sniperLaser || !sniperLaser.IsValid()) {
-        Instance.Msg(`items.js: could not find prop_dynamic named ${LASER_ENTITY_NAME}.`);
-        sniperLaserDefaultTransform = undefined;
-        sniperLaserAtDefault = true;
+function RefreshTrackedLaser(state) {
+    const { config } = state;
+    state.laser = Instance.FindEntitiesByName(config.laserName)[0];
+
+    if (!state.laser || !state.laser.IsValid()) {
+        Instance.Msg(`items.js: could not find prop_dynamic named ${config.laserName}.`);
+        state.laserDefaultTransform = undefined;
+        state.laserAtDefault = true;
         return;
     }
 
-    sniperLaserDefaultTransform = {
-        position: sniperLaser.GetAbsOrigin(),
-        angles: sniperLaser.GetAbsAngles()
+    state.laserDefaultTransform = {
+        position: state.laser.GetAbsOrigin(),
+        angles: state.laser.GetAbsAngles()
     };
-    sniperLaserAtDefault = true;
+    state.laserAtDefault = true;
 }
 
-function IsTrackedSniper(weapon) {
+function IsTrackedWeapon(state, weapon) {
     if (!weapon || !weapon.IsValid()) {
         return false;
     }
 
-    for (const sniper of sniperWeapons) {
-        if (sniper && sniper.IsValid() && sniper === weapon) {
+    for (const trackedWeapon of state.weapons) {
+        if (trackedWeapon && trackedWeapon.IsValid() && trackedWeapon === weapon) {
             return true;
         }
     }
 
-    return IsNamedSniperWeapon(weapon);
+    return IsNamedTrackedWeapon(state, weapon);
 }
 
-function IsNamedSniperWeapon(weapon) {
+function IsNamedTrackedWeapon(state, weapon) {
+    const { config } = state;
     return weapon
         && weapon.IsValid()
         && typeof weapon.GetClassName === "function"
         && typeof weapon.GetEntityName === "function"
-        && weapon.GetClassName() === SNIPER_CLASS_NAME
-        && weapon.GetEntityName() === SNIPER_ENTITY_NAME;
+        && weapon.GetClassName() === config.className
+        && weapon.GetEntityName() === config.entityName;
+}
+
+function FindTrackedItemState(weapon) {
+    for (const state of trackedItemStates.values()) {
+        if (IsTrackedWeapon(state, weapon)) {
+            return state;
+        }
+    }
+
+    return undefined;
 }
 
 function DescribeWeapon(weapon) {
@@ -105,28 +144,35 @@ function DescribeWeapon(weapon) {
 }
 
 function StartActiveCheck() {
-    if (!sniperLaserLockedAtDefault && (helicopterLaserActive || sniperHolders.size > 0)) {
+    const hasActiveItem = Array.from(trackedItemStates.values()).some((state) => {
+        return state !== sniperItemState || !sniperLaserLockedAtDefault
+            ? state.holders.size > 0
+            : false;
+    });
+
+    if (helicopterLaserActive || hasActiveItem) {
         Instance.SetNextThink(Instance.GetGameTime());
     }
 }
 
-function RefreshSniperHolders() {
-    sniperHolders = new Map();
+function RefreshTrackedHolders(state) {
+    state.holders = new Map();
 
-    for (const sniper of sniperWeapons) {
-        if (!sniper || !sniper.IsValid()) {
+    for (const weapon of state.weapons) {
+        if (!weapon || !weapon.IsValid()) {
             continue;
         }
 
-        const owner = sniper.GetOwner();
+        const owner = weapon.GetOwner();
         if (owner && owner.IsValid()) {
-            sniperHolders.set(sniper, owner);
+            state.holders.set(weapon, owner);
         }
     }
 }
 
-function TrackSniperPickup(weapon) {
-    if (sniperLaserLockedAtDefault || !IsTrackedSniper(weapon)) {
+function TrackItemPickup(weapon) {
+    const state = FindTrackedItemState(weapon);
+    if (!state || (state === sniperItemState && sniperLaserLockedAtDefault)) {
         return;
     }
 
@@ -135,80 +181,87 @@ function TrackSniperPickup(weapon) {
         return;
     }
 
-    sniperHolders.set(weapon, owner);
-    Instance.Msg("items.js: tracked sniper was picked up.");
-    if (!helicopterLaserActive) {
-        UpdateLaserForHolder(weapon, owner);
+    state.holders.set(weapon, owner);
+    Instance.Msg(`items.js: tracked ${state.config.entityName} was picked up.`);
+    if (state !== sniperItemState || !helicopterLaserActive) {
+        UpdateLaserForHolder(state, weapon, owner);
     }
     StartActiveCheck();
 }
 
-function TrackSniperDrop(weapon) {
-    if (!IsTrackedSniper(weapon)) {
+function TrackItemDrop(weapon) {
+    const state = FindTrackedItemState(weapon);
+    if (!state) {
         return;
     }
 
-    sniperHolders.delete(weapon);
-    Instance.Msg("items.js: tracked sniper was dropped.");
-    if (!helicopterLaserActive) {
-        ResetLaserToDefault();
+    state.holders.delete(weapon);
+    Instance.Msg(`items.js: tracked ${state.config.entityName} was dropped.`);
+    if (state !== sniperItemState || !helicopterLaserActive) {
+        ResetLaserToDefault(state);
     }
 }
 
-function ResetLaserToDefault() {
-    if (sniperLaserAtDefault) {
+function ResetLaserToDefault(state) {
+    if (state.laserAtDefault) {
         return;
     }
 
-    if (!sniperLaser || !sniperLaser.IsValid()) {
-        RefreshSniperLaser();
+    if (!state.laser || !state.laser.IsValid()) {
+        RefreshTrackedLaser(state);
     }
 
-    if (!sniperLaser || !sniperLaser.IsValid() || !sniperLaserDefaultTransform) {
+    if (!state.laser || !state.laser.IsValid() || !state.laserDefaultTransform) {
         return;
     }
 
-    sniperLaser.SetParent(undefined);
-    sniperLaser.Teleport(sniperLaserDefaultTransform);
-    sniperLaserAtDefault = true;
-    Instance.Msg("items.js: returned sniper_laser to its default map position.");
+    state.laser.SetParent(undefined);
+    state.laser.Teleport(state.laserDefaultTransform);
+    state.laserAtDefault = true;
+    Instance.Msg(`items.js: returned ${state.config.laserName} to its default map position.`);
 }
 
-function UpdateLaserForHolder(weapon, pawn) {
-    if (!sniperLaser || !sniperLaser.IsValid()) {
-        RefreshSniperLaser();
+function UpdateLaserForHolder(state, weapon, pawn) {
+    if (!state.laser || !state.laser.IsValid()) {
+        RefreshTrackedLaser(state);
     }
 
-    if (!sniperLaser || !sniperLaser.IsValid() || !pawn || !pawn.IsValid() || !pawn.IsAlive()) {
+    if (!state.laser || !state.laser.IsValid() || !pawn || !pawn.IsValid() || !pawn.IsAlive()) {
         return;
     }
 
     const activeWeapon = pawn.GetActiveWeapon();
-    if (!IsTrackedSniper(activeWeapon)) {
+    if (!IsTrackedWeapon(state, activeWeapon)) {
         const description = DescribeWeapon(activeWeapon);
-        if (debugActiveDescription !== description) {
-            Instance.Msg(`items.js: tracked sniper is held, active weapon is ${description}.`);
-            debugActiveDescription = description;
+        if (state.debugActiveDescription !== description) {
+            Instance.Msg(
+                `items.js: tracked ${state.config.entityName} is held, active weapon is ${description}.`
+            );
+            state.debugActiveDescription = description;
         }
-        ResetLaserToDefault();
+        ResetLaserToDefault(state);
         return;
     }
 
-    if (debugActiveWeapon !== activeWeapon) {
-        Instance.Msg("items.js: tracked sniper is held and active.");
-        debugActiveWeapon = activeWeapon;
+    if (state.debugActiveWeapon !== activeWeapon) {
+        Instance.Msg(`items.js: tracked ${state.config.entityName} is held and active.`);
+        state.debugActiveWeapon = activeWeapon;
     }
 
     const position = pawn.GetEyePosition();
     const angles = pawn.GetEyeAngles();
 
-    sniperLaser.SetParent(undefined);
-    sniperLaser.Teleport({
+    state.laser.SetParent(undefined);
+    state.laser.Teleport({
         position,
         angles
     });
-    sniperLaserAtDefault = false;
-    Instance.Msg(`items.js: transformed sniper_laser to eye position (${position.x}, ${position.y}, ${position.z}) and angles (${angles.pitch}, ${angles.yaw}, ${angles.roll}).`);
+    state.laserAtDefault = false;
+    Instance.Msg(
+        `items.js: transformed ${state.config.laserName} to eye position ` +
+        `(${position.x}, ${position.y}, ${position.z}) and angles ` +
+        `(${angles.pitch}, ${angles.yaw}, ${angles.roll}).`
+    );
 }
 
 function GetAnglesToward(start, end) {
@@ -239,6 +292,7 @@ function LerpAngles(current, target, amount) {
 }
 
 function UpdateHelicopterLaser() {
+    const sniperLaser = sniperItemState.laser;
     if (
         !helicopterLaserActive ||
         !helicopterLaserParent ||
@@ -286,13 +340,16 @@ function UpdateHelicopterLaser() {
 function ActivateHelicopterLaser(activator) {
     sniperLaserLockedAtDefault = false;
 
-    if (!sniperLaser || !sniperLaser.IsValid()) {
-        RefreshSniperLaser();
+    if (!sniperItemState.laser || !sniperItemState.laser.IsValid()) {
+        RefreshTrackedLaser(sniperItemState);
     }
 
     helicopterLaserParent = Instance.FindEntitiesByName(HELICOPTER_LASER_ENTITY_NAME)[0];
+    const sniperLaser = sniperItemState.laser;
     if (!sniperLaser || !sniperLaser.IsValid()) {
-        Instance.Msg(`items.js: could not find prop_dynamic named ${LASER_ENTITY_NAME}.`);
+        Instance.Msg(
+            `items.js: could not find prop_dynamic named ${sniperItemState.config.laserName}.`
+        );
         return;
     }
 
@@ -315,7 +372,7 @@ function ActivateHelicopterLaser(activator) {
     sniperLaser.SetParent(undefined);
     sniperLaser.Teleport({ position, angles });
     sniperLaser.SetParent(helicopterLaserParent);
-    sniperLaserAtDefault = false;
+    sniperItemState.laserAtDefault = false;
     helicopterLaserActive = true;
     helicopterLaserTarget = target;
     helicopterLaserAngles = angles;
@@ -339,12 +396,34 @@ function ResetSniperLaserForEnding() {
     helicopterLaserTarget = undefined;
     helicopterLaserAngles = undefined;
     helicopterLaserLastUpdateTime = 0;
-    sniperHolders.clear();
-    ResetLaserToDefault();
+    sniperItemState.holders.clear();
+    ResetLaserToDefault(sniperItemState);
+}
+
+function UpdateTrackedItem(state) {
+    for (const [weapon, pawn] of state.holders) {
+        if (!weapon || !weapon.IsValid() || !pawn || !pawn.IsValid() || !pawn.IsAlive()) {
+            state.holders.delete(weapon);
+            continue;
+        }
+
+        if (IsTrackedWeapon(state, pawn.GetActiveWeapon())) {
+            UpdateLaserForHolder(state, weapon, pawn);
+            return;
+        }
+    }
+
+    ResetLaserToDefault(state);
 }
 
 function Think() {
-    if (sniperLaserLockedAtDefault || (!helicopterLaserActive && sniperHolders.size === 0)) {
+    const hasTrackedHolders = Array.from(trackedItemStates.values()).some((state) => {
+        return state !== sniperItemState || !sniperLaserLockedAtDefault
+            ? state.holders.size > 0
+            : false;
+    });
+
+    if (!helicopterLaserActive && !hasTrackedHolders) {
         return;
     }
 
@@ -352,44 +431,39 @@ function Think() {
 
     if (helicopterLaserActive) {
         UpdateHelicopterLaser();
-        return;
     }
 
-    for (const [weapon, pawn] of sniperHolders) {
-        if (!weapon || !weapon.IsValid() || !pawn || !pawn.IsValid() || !pawn.IsAlive()) {
-            sniperHolders.delete(weapon);
+    for (const state of trackedItemStates.values()) {
+        if (state === sniperItemState && (sniperLaserLockedAtDefault || helicopterLaserActive)) {
             continue;
         }
 
-        if (IsTrackedSniper(pawn.GetActiveWeapon())) {
-            UpdateLaserForHolder(weapon, pawn);
-            return;
-        }
+        UpdateTrackedItem(state);
     }
-
-    ResetLaserToDefault();
 }
 
-function UpdateLaserForExistingHolder() {
-    for (const [weapon, pawn] of sniperHolders) {
-        if (!weapon || !weapon.IsValid() || !pawn || !pawn.IsValid() || !pawn.IsAlive()) {
-            sniperHolders.delete(weapon);
-            continue;
-        }
+function UpdateLasersForExistingHolders() {
+    for (const state of trackedItemStates.values()) {
+        for (const [weapon, pawn] of state.holders) {
+            if (!weapon || !weapon.IsValid() || !pawn || !pawn.IsValid() || !pawn.IsAlive()) {
+                state.holders.delete(weapon);
+                continue;
+            }
 
-        if (pawn.GetActiveWeapon() === weapon) {
-            UpdateLaserForHolder(weapon, pawn);
-            return;
+            if (pawn.GetActiveWeapon() === weapon) {
+                UpdateLaserForHolder(state, weapon, pawn);
+                break;
+            }
         }
     }
 }
 
 Instance.OnWeaponPickup((event) => {
-    TrackSniperPickup(event.weapon);
+    TrackItemPickup(event.weapon);
 });
 
 Instance.OnWeaponDrop((event) => {
-    TrackSniperDrop(event.weapon);
+    TrackItemDrop(event.weapon);
 });
 
 Instance.OnScriptInput("helicopter_laser", ({ activator }) => {
@@ -400,7 +474,7 @@ Instance.OnScriptInput("reset_sniper_laser", ResetSniperLaserForEnding);
 
 Instance.OnRoundStart(() => {
     if (helicopterLaserActive) {
-        ResetLaserToDefault();
+        ResetLaserToDefault(sniperItemState);
     }
     helicopterLaserActive = false;
     helicopterLaserParent = undefined;
@@ -408,12 +482,12 @@ Instance.OnRoundStart(() => {
     helicopterLaserAngles = undefined;
     helicopterLaserLastUpdateTime = 0;
     sniperLaserLockedAtDefault = false;
-    RefreshSnipers();
-    UpdateLaserForExistingHolder();
+    RefreshAllTrackedItems();
+    UpdateLasersForExistingHolders();
     StartActiveCheck();
 });
 
-RefreshSnipers();
+RefreshAllTrackedItems();
 Instance.SetThink(Think);
-UpdateLaserForExistingHolder();
+UpdateLasersForExistingHolders();
 StartActiveCheck();
