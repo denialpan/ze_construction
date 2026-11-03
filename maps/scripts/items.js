@@ -1,4 +1,4 @@
-import { CSDamageTypes, CSInputs, Instance } from "cs_script/point_script";
+import { CSDamageFlags, CSDamageTypes, CSInputs, Instance } from "cs_script/point_script";
 
 const TRACKED_ITEM_CONFIGS = [
     {
@@ -22,7 +22,11 @@ const PLAYER_HULL_HALF_WIDTH = 16;
 const PLAYER_HULL_STANDING_HEIGHT = 72;
 const PLAYER_HULL_DUCKED_HEIGHT = 36;
 const RAY_PARALLEL_EPSILON = 0.000001;
-const DEFAULT_HITSCAN_DAMAGE = 115;
+const DEFAULT_HITSCAN_DAMAGE = 999;
+const SNIPER_SECRET_ADD_PLAYER_INPUT = "sniper_secret_ending_add_potential_player";
+const SNIPER_SECRET_REMOVE_PLAYER_INPUT = "sniper_secret_ending_remove_potential_player";
+const SERIOUS_ROOM_DESTINATION_NAME = "teleport_serious_room_destination";
+const SERIOUS_ROOM_DESTINATION_CLASS = "info_teleport_destination";
 
 const trackedItemStates = new Map(TRACKED_ITEM_CONFIGS.map((config) => [
     config.key,
@@ -38,6 +42,7 @@ const trackedItemStates = new Map(TRACKED_ITEM_CONFIGS.map((config) => [
     }
 ]));
 const consumedTrackedWeapons = new Set();
+const sniperSecretPotentialPlayerSlots = new Set();
 const sniperItemState = trackedItemStates.get("sniper");
 const bombItemState = trackedItemStates.get("bomb");
 let helicopterLaserActive = false;
@@ -66,6 +71,55 @@ function GetPlayerController(entity) {
     }
 
     return undefined;
+}
+
+function SetSniperSecretPotentialPlayer(activator, isInside) {
+    const player = GetPlayerController(activator);
+    if (!player || !player.IsConnected()) {
+        return;
+    }
+
+    const playerSlot = player.GetPlayerSlot();
+    if (isInside) {
+        sniperSecretPotentialPlayerSlots.add(playerSlot);
+    } else {
+        sniperSecretPotentialPlayerSlots.delete(playerSlot);
+    }
+}
+
+function AreSniperSecretPlayersInside(shooter, victim) {
+    const shooterPlayer = GetPlayerController(shooter);
+    const victimPlayer = GetPlayerController(victim);
+    if (!shooterPlayer || !victimPlayer) {
+        return false;
+    }
+
+    return sniperSecretPotentialPlayerSlots.has(shooterPlayer.GetPlayerSlot())
+        && sniperSecretPotentialPlayerSlots.has(victimPlayer.GetPlayerSlot());
+}
+
+function TeleportPlayerToSeriousRoom(pawn) {
+    const destination = Instance.FindEntitiesByName(SERIOUS_ROOM_DESTINATION_NAME).find((entity) => {
+        return entity
+            && entity.IsValid()
+            && typeof entity.GetClassName === "function"
+            && entity.GetClassName() === SERIOUS_ROOM_DESTINATION_CLASS;
+    });
+
+    if (!destination) {
+        Instance.Msg(
+            `items.js: could not find ${SERIOUS_ROOM_DESTINATION_CLASS} named ` +
+            `${SERIOUS_ROOM_DESTINATION_NAME}.`
+        );
+        return;
+    }
+
+    pawn.Teleport({
+        position: destination.GetAbsOrigin(),
+        angles: destination.GetAbsAngles(),
+        velocity: { x: 0, y: 0, z: 0 }
+    });
+    Instance.Msg("items.js: teleported qualifying sniper_item shooter to the serious room.");
 }
 
 function RefreshTrackedItems(state) {
@@ -220,6 +274,43 @@ function GetPlayerHull(pawn) {
     };
 }
 
+function DamagePassed(victim, beforeHealth, result) {
+    if (!victim || !victim.IsValid()) {
+        return true;
+    }
+
+    return result > 0 || victim.GetHealth() < beforeHealth || !victim.IsAlive();
+}
+
+function ApplyHitscanDamageWithFallback(victim, shooter, weapon, damage) {
+    const beforeHealth = victim.GetHealth();
+    const damageFlags = beforeHealth <= damage
+        ? CSDamageFlags.IGNORE_ARMOR | CSDamageFlags.FORCE_DEATH
+        : CSDamageFlags.IGNORE_ARMOR;
+
+    const result = victim.TakeDamage({
+        damage,
+        damageTypes: CSDamageTypes.BULLET,
+        damageFlags,
+        attacker: shooter,
+        inflictor: shooter,
+        weapon
+    });
+
+    if (DamagePassed(victim, beforeHealth, result)) {
+        return;
+    }
+
+    Instance.Msg(
+        "items.js: attributed hitscan damage did not pass, applying neutral fallback damage."
+    );
+    victim.TakeDamage({
+        damage,
+        damageTypes: CSDamageTypes.GENERIC,
+        damageFlags: CSDamageFlags.IGNORE_ARMOR
+    });
+}
+
 function GetSniperHitscanDamage() {
     for (const weapon of sniperItemState.weapons) {
         if (!weapon || !weapon.IsValid()) {
@@ -284,15 +375,20 @@ function FireItemHitscan(state, weapon, damage) {
     hits.sort((a, b) => a.distance - b.distance);
 
     applyingItemHitscanDamage = true;
+    let secretEndingTriggered = false;
     try {
         for (const hit of hits) {
-            hit.target.TakeDamage({
-                damage,
-                damageTypes: CSDamageTypes.BULLET,
-                attacker: shooter,
-                inflictor: shooter,
-                weapon
-            });
+            const victimWasAlive = hit.target.IsAlive();
+            const qualifiesForSecretEnding = !secretEndingTriggered
+                && state === sniperItemState
+                && AreSniperSecretPlayersInside(shooter, hit.target);
+
+            ApplyHitscanDamageWithFallback(hit.target, shooter, weapon, damage);
+
+            if (qualifiesForSecretEnding && victimWasAlive && !hit.target.IsAlive()) {
+                secretEndingTriggered = true;
+                TeleportPlayerToSeriousRoom(shooter);
+            }
         }
     } finally {
         applyingItemHitscanDamage = false;
@@ -682,6 +778,22 @@ Instance.OnWeaponDrop((event) => {
     TrackItemDrop(event.weapon);
 });
 
+Instance.OnScriptInput(SNIPER_SECRET_ADD_PLAYER_INPUT, ({ activator }) => {
+    SetSniperSecretPotentialPlayer(activator, true);
+});
+
+Instance.OnScriptInput(SNIPER_SECRET_REMOVE_PLAYER_INPUT, ({ activator }) => {
+    SetSniperSecretPotentialPlayer(activator, false);
+});
+
+Instance.OnPlayerDisconnect((event) => {
+    sniperSecretPotentialPlayerSlots.delete(event.playerSlot);
+});
+
+Instance.OnBeginRoundRestart(() => {
+    sniperSecretPotentialPlayerSlots.clear();
+});
+
 Instance.OnModifyPlayerDamage((event) => {
     if (
         !applyingItemHitscanDamage &&
@@ -713,6 +825,7 @@ Instance.OnRoundStart(() => {
     helicopterLaserLastUpdateTime = 0;
     sniperLaserLockedAtDefault = false;
     consumedTrackedWeapons.clear();
+    sniperSecretPotentialPlayerSlots.clear();
     RefreshAllTrackedItems();
     UpdateLasersForExistingHolders();
     StartActiveCheck();
