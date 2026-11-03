@@ -37,6 +37,7 @@ const trackedItemStates = new Map(TRACKED_ITEM_CONFIGS.map((config) => [
         debugActiveDescription: ""
     }
 ]));
+const consumedTrackedWeapons = new Set();
 const sniperItemState = trackedItemStates.get("sniper");
 const bombItemState = trackedItemStates.get("bomb");
 let helicopterLaserActive = false;
@@ -235,21 +236,21 @@ function GetSniperHitscanDamage() {
 }
 
 function FireItemHitscan(state, weapon, damage) {
-    if (!IsTrackedWeapon(state, weapon)) {
-        return;
+    if (consumedTrackedWeapons.has(weapon) || !IsTrackedWeapon(state, weapon)) {
+        return false;
     }
 
     const shooter = weapon.GetOwner();
     if (!shooter || !shooter.IsValid() || !shooter.IsAlive()) {
-        return;
+        return false;
     }
 
     if (shooter.GetActiveWeapon() !== weapon) {
-        return;
+        return false;
     }
 
     if (damage <= 0) {
-        return;
+        return false;
     }
 
     const start = shooter.GetEyePosition();
@@ -301,16 +302,52 @@ function FireItemHitscan(state, weapon, damage) {
         `items.js: ${state.config.entityName} hitscan reached ${hits.length} player(s) ` +
         `over ${SNIPER_HITSCAN_RANGE} units.`
     );
+    return true;
+}
+
+function ConsumeTrackedWeapon(state, weapon) {
+    if (!weapon || !weapon.IsValid() || consumedTrackedWeapons.has(weapon)) {
+        return;
+    }
+
+    const owner = weapon.GetOwner();
+    consumedTrackedWeapons.add(weapon);
+    state.holders.delete(weapon);
+    state.debugActiveWeapon = undefined;
+    state.debugActiveDescription = "";
+
+    if (state !== sniperItemState || !helicopterLaserActive) {
+        ResetLaserToDefault(state);
+    }
+
+    Instance.QueueAfterThinks(() => {
+        if (owner && owner.IsValid() && weapon.IsValid()) {
+            owner.DestroyWeapon(weapon);
+            Instance.Msg(`items.js: destroyed consumed ${state.config.entityName}.`);
+        }
+
+        consumedTrackedWeapons.delete(weapon);
+    });
 }
 
 function FireSniperHitscan(weapon) {
     const weaponData = weapon?.GetData();
     const damage = weaponData ? weaponData.GetDamage() : DEFAULT_HITSCAN_DAMAGE;
-    FireItemHitscan(sniperItemState, weapon, damage);
+    if (FireItemHitscan(sniperItemState, weapon, damage)) {
+        ConsumeTrackedWeapon(sniperItemState, weapon);
+        return true;
+    }
+
+    return false;
 }
 
 function FireBombHitscan(weapon) {
-    FireItemHitscan(bombItemState, weapon, GetSniperHitscanDamage());
+    if (FireItemHitscan(bombItemState, weapon, GetSniperHitscanDamage())) {
+        ConsumeTrackedWeapon(bombItemState, weapon);
+        return true;
+    }
+
+    return false;
 }
 
 function StartActiveCheck() {
@@ -582,7 +619,9 @@ function UpdateTrackedItem(state) {
                 state === bombItemState &&
                 pawn.WasInputJustPressed(CSInputs.ATTACK)
             ) {
-                FireBombHitscan(weapon);
+                if (FireBombHitscan(weapon)) {
+                    return;
+                }
             }
 
             UpdateLaserForHolder(state, weapon, pawn);
@@ -673,6 +712,7 @@ Instance.OnRoundStart(() => {
     helicopterLaserAngles = undefined;
     helicopterLaserLastUpdateTime = 0;
     sniperLaserLockedAtDefault = false;
+    consumedTrackedWeapons.clear();
     RefreshAllTrackedItems();
     UpdateLasersForExistingHolders();
     StartActiveCheck();
