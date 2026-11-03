@@ -1,4 +1,4 @@
-import { Instance } from "cs_script/point_script";
+import { CSDamageTypes, CSInputs, Instance } from "cs_script/point_script";
 
 const TRACKED_ITEM_CONFIGS = [
     {
@@ -17,6 +17,12 @@ const TRACKED_ITEM_CONFIGS = [
 const HELICOPTER_LASER_ENTITY_NAME = "helicopter_laser";
 const LASER_UPDATE_INTERVAL = 0.005;
 const HELICOPTER_LASER_FOCUS_LERP_TIME = 0.15;
+const SNIPER_HITSCAN_RANGE = 8192;
+const PLAYER_HULL_HALF_WIDTH = 16;
+const PLAYER_HULL_STANDING_HEIGHT = 72;
+const PLAYER_HULL_DUCKED_HEIGHT = 36;
+const RAY_PARALLEL_EPSILON = 0.000001;
+const DEFAULT_HITSCAN_DAMAGE = 115;
 
 const trackedItemStates = new Map(TRACKED_ITEM_CONFIGS.map((config) => [
     config.key,
@@ -32,12 +38,14 @@ const trackedItemStates = new Map(TRACKED_ITEM_CONFIGS.map((config) => [
     }
 ]));
 const sniperItemState = trackedItemStates.get("sniper");
+const bombItemState = trackedItemStates.get("bomb");
 let helicopterLaserActive = false;
 let helicopterLaserParent = undefined;
 let helicopterLaserTarget = undefined;
 let helicopterLaserAngles = undefined;
 let helicopterLaserLastUpdateTime = 0;
 let sniperLaserLockedAtDefault = false;
+let applyingItemHitscanDamage = false;
 
 function GetPlayerController(entity) {
     if (!entity) {
@@ -141,6 +149,168 @@ function DescribeWeapon(weapon) {
     const className = typeof weapon.GetClassName === "function" ? weapon.GetClassName() : "unknown_class";
     const entityName = typeof weapon.GetEntityName === "function" ? weapon.GetEntityName() : "unknown_name";
     return `${className}:${entityName}`;
+}
+
+function GetForwardVector(angles) {
+    const pitchRadians = (angles.pitch * Math.PI) / 180;
+    const yawRadians = (angles.yaw * Math.PI) / 180;
+    const horizontalScale = Math.cos(pitchRadians);
+
+    return {
+        x: Math.cos(yawRadians) * horizontalScale,
+        y: Math.sin(yawRadians) * horizontalScale,
+        z: -Math.sin(pitchRadians)
+    };
+}
+
+function GetRayAabbDistance(start, direction, mins, maxs, maxDistance) {
+    let minimumDistance = 0;
+    let maximumDistance = maxDistance;
+
+    for (const axis of ["x", "y", "z"]) {
+        const axisDirection = direction[axis];
+        const axisStart = start[axis];
+
+        if (Math.abs(axisDirection) <= RAY_PARALLEL_EPSILON) {
+            if (axisStart < mins[axis] || axisStart > maxs[axis]) {
+                return undefined;
+            }
+            continue;
+        }
+
+        const inverseDirection = 1 / axisDirection;
+        let nearDistance = (mins[axis] - axisStart) * inverseDirection;
+        let farDistance = (maxs[axis] - axisStart) * inverseDirection;
+
+        if (nearDistance > farDistance) {
+            const swap = nearDistance;
+            nearDistance = farDistance;
+            farDistance = swap;
+        }
+
+        minimumDistance = Math.max(minimumDistance, nearDistance);
+        maximumDistance = Math.min(maximumDistance, farDistance);
+
+        if (minimumDistance > maximumDistance) {
+            return undefined;
+        }
+    }
+
+    return minimumDistance <= maxDistance ? minimumDistance : undefined;
+}
+
+function GetPlayerHull(pawn) {
+    const origin = pawn.GetAbsOrigin();
+    const height = pawn.IsDucked()
+        ? PLAYER_HULL_DUCKED_HEIGHT
+        : PLAYER_HULL_STANDING_HEIGHT;
+
+    return {
+        mins: {
+            x: origin.x - PLAYER_HULL_HALF_WIDTH,
+            y: origin.y - PLAYER_HULL_HALF_WIDTH,
+            z: origin.z
+        },
+        maxs: {
+            x: origin.x + PLAYER_HULL_HALF_WIDTH,
+            y: origin.y + PLAYER_HULL_HALF_WIDTH,
+            z: origin.z + height
+        }
+    };
+}
+
+function GetSniperHitscanDamage() {
+    for (const weapon of sniperItemState.weapons) {
+        if (!weapon || !weapon.IsValid()) {
+            continue;
+        }
+
+        const weaponData = weapon.GetData();
+        if (weaponData && weaponData.GetDamage() > 0) {
+            return weaponData.GetDamage();
+        }
+    }
+
+    return DEFAULT_HITSCAN_DAMAGE;
+}
+
+function FireItemHitscan(state, weapon, damage) {
+    if (!IsTrackedWeapon(state, weapon)) {
+        return;
+    }
+
+    const shooter = weapon.GetOwner();
+    if (!shooter || !shooter.IsValid() || !shooter.IsAlive()) {
+        return;
+    }
+
+    if (shooter.GetActiveWeapon() !== weapon) {
+        return;
+    }
+
+    if (damage <= 0) {
+        return;
+    }
+
+    const start = shooter.GetEyePosition();
+    const direction = GetForwardVector(shooter.GetEyeAngles());
+    const hits = [];
+
+    for (const player of Instance.GetAllPlayerControllers()) {
+        if (!player || !player.IsConnected()) {
+            continue;
+        }
+
+        const target = player.GetPlayerPawn();
+        if (!target || !target.IsValid() || !target.IsAlive() || target === shooter) {
+            continue;
+        }
+
+        const hull = GetPlayerHull(target);
+        const distance = GetRayAabbDistance(
+            start,
+            direction,
+            hull.mins,
+            hull.maxs,
+            SNIPER_HITSCAN_RANGE
+        );
+
+        if (distance !== undefined) {
+            hits.push({ target, distance });
+        }
+    }
+
+    hits.sort((a, b) => a.distance - b.distance);
+
+    applyingItemHitscanDamage = true;
+    try {
+        for (const hit of hits) {
+            hit.target.TakeDamage({
+                damage,
+                damageTypes: CSDamageTypes.BULLET,
+                attacker: shooter,
+                inflictor: shooter,
+                weapon
+            });
+        }
+    } finally {
+        applyingItemHitscanDamage = false;
+    }
+
+    Instance.Msg(
+        `items.js: ${state.config.entityName} hitscan reached ${hits.length} player(s) ` +
+        `over ${SNIPER_HITSCAN_RANGE} units.`
+    );
+}
+
+function FireSniperHitscan(weapon) {
+    const weaponData = weapon?.GetData();
+    const damage = weaponData ? weaponData.GetDamage() : DEFAULT_HITSCAN_DAMAGE;
+    FireItemHitscan(sniperItemState, weapon, damage);
+}
+
+function FireBombHitscan(weapon) {
+    FireItemHitscan(bombItemState, weapon, GetSniperHitscanDamage());
 }
 
 function StartActiveCheck() {
@@ -408,6 +578,13 @@ function UpdateTrackedItem(state) {
         }
 
         if (IsTrackedWeapon(state, pawn.GetActiveWeapon())) {
+            if (
+                state === bombItemState &&
+                pawn.WasInputJustPressed(CSInputs.ATTACK)
+            ) {
+                FireBombHitscan(weapon);
+            }
+
             UpdateLaserForHolder(state, weapon, pawn);
             return;
         }
@@ -464,6 +641,20 @@ Instance.OnWeaponPickup((event) => {
 
 Instance.OnWeaponDrop((event) => {
     TrackItemDrop(event.weapon);
+});
+
+Instance.OnModifyPlayerDamage((event) => {
+    if (
+        !applyingItemHitscanDamage &&
+        event.weapon &&
+        IsTrackedWeapon(sniperItemState, event.weapon)
+    ) {
+        return { abort: true };
+    }
+});
+
+Instance.OnGunFire((event) => {
+    FireSniperHitscan(event.weapon);
 });
 
 Instance.OnScriptInput("helicopter_laser", ({ activator }) => {
