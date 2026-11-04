@@ -6,6 +6,7 @@
     <Panel class="Root">
         <Panel id="note" class="Dismissed">
             <Image id="note_background" src="file://{images}/clipboard.png" />
+            <Image id="note_background_secret" src="file://{images}/clipboard_secret.png" />
             <Panel id="note_content">
                 <Label id="note_body" class="Body" text="{s:body}" />
             </Panel>

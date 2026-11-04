@@ -21,16 +21,29 @@
     transform: translateY(-12px);
 }
 
-#note_background {
+#note_background,
+#note_background_secret {
     width: 100%;
     height: 100%;
+}
+
+#note_background_secret {
+    visibility: collapse;
+}
+
+#note.Secret #note_background {
+    visibility: collapse;
+}
+
+#note.Secret #note_background_secret {
+    visibility: visible;
 }
 
 #note_content {
     width: 100%;
     height: 100%;
     flow-children: down;
-    padding: 170px 75px 60px 75px;
+    padding: 145px 105px 95px 105px;
 }
 
 .Body {

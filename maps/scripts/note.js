@@ -4,15 +4,37 @@ const NOTE_LAYOUT_NAME = "hud_note";
 const NOTE_PANEL_ID = "note";
 const NOTE_CLOSE_DELAY = 0.2;
 const NOTE_CLOSE_RADIUS = 64;
+const TRUE_ENDING_NOTE_NAME = "note_ending_secret";
+const TRUE_ENDING_NOTE_TEXT = "\\n\\n\\n\\n\\n";
+const TRUE_ENDING_CODE_LENGTH = 10;
 
 const NOTES = {
     note_1: "This is the first readable note.\\nThis line starts below it.",
     note_2: "This is the second readable note.",
-	note_ending_secret: "I hate invisible walls, thank you for exploring the map!\\n\\n\\n\\n\\n98196542"
+	note_ending_secret: TRUE_ENDING_NOTE_TEXT
 };
 
 let noteLayout = null;
 const openNotes = new Map();
+
+function SetTrueEndingNoteCode(code) {
+    NOTES[TRUE_ENDING_NOTE_NAME] = TRUE_ENDING_NOTE_TEXT + code;
+}
+
+function GenerateTrueEndingCode() {
+    let code = "";
+
+    for (let i = 0; i < TRUE_ENDING_CODE_LENGTH; i++) {
+        code += String(Math.floor(Math.random() * 9) + 1);
+    }
+
+    return code;
+}
+
+function EnableTrueEndingNote() {
+    const code = GenerateTrueEndingCode();
+    SetTrueEndingNoteCode(code);
+}
 
 function GetNoteLayout() {
     if (!(noteLayout instanceof Entity) || !noteLayout.IsValid()) {
@@ -86,6 +108,7 @@ function ShowNote(player, noteName, noteEntity) {
 
     const playerSlot = player.GetPlayerSlot();
     layout.SetDialogVariableStringForPlayer(playerSlot, NOTE_PANEL_ID, "body", FormatNoteText(text));
+    layout.SetHasClassForPlayer(playerSlot, NOTE_PANEL_ID, "Secret", noteName === TRUE_ENDING_NOTE_NAME);
     layout.SetHasClassForPlayer(playerSlot, NOTE_PANEL_ID, "Dismissed", false);
     layout.SetInputCaptureEnabled(playerSlot, true);
     openNotes.set(playerSlot, {
@@ -147,6 +170,8 @@ for (const noteName in NOTES) {
         ShowNote(player, noteName, caller);
     });
 }
+
+Instance.OnScriptInput("enable_true_ending_note", EnableTrueEndingNote);
 
 Instance.SetThink(UpdateOpenNotes);
 
