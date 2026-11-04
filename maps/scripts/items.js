@@ -22,11 +22,12 @@ const PLAYER_HULL_HALF_WIDTH = 16;
 const PLAYER_HULL_STANDING_HEIGHT = 72;
 const PLAYER_HULL_DUCKED_HEIGHT = 36;
 const RAY_PARALLEL_EPSILON = 0.000001;
-const DEFAULT_HITSCAN_DAMAGE = 999;
+const DEFAULT_HITSCAN_DAMAGE = 115;
 const SNIPER_SECRET_ADD_PLAYER_INPUT = "sniper_secret_ending_add_potential_player";
 const SNIPER_SECRET_REMOVE_PLAYER_INPUT = "sniper_secret_ending_remove_potential_player";
 const SERIOUS_ROOM_DESTINATION_NAME = "teleport_serious_room_destination";
 const SERIOUS_ROOM_DESTINATION_CLASS = "info_teleport_destination";
+const SERIOUS_ROOM_RELAY_NAME = "relay_serious_room";
 
 const trackedItemStates = new Map(TRACKED_ITEM_CONFIGS.map((config) => [
     config.key,
@@ -388,6 +389,11 @@ function FireItemHitscan(state, weapon, damage) {
             if (qualifiesForSecretEnding && victimWasAlive && !hit.target.IsAlive()) {
                 secretEndingTriggered = true;
                 TeleportPlayerToSeriousRoom(shooter);
+                Instance.EntFireAtName({
+                    name: SERIOUS_ROOM_RELAY_NAME,
+                    input: "Trigger",
+                    activator: shooter
+                });
             }
         }
     } finally {
