@@ -35,7 +35,7 @@ Layer0
 	//---- Self Illum ----
 	g_flSelfIllumAlbedoFactor "1.000"
 	g_flSelfIllumBrightness "0.855"
-	g_flSelfIllumScale "1.000"
+	g_flSelfIllumScale "0.200"
 	g_vSelfIllumScrollSpeed "[0.000 0.000]"
 	g_vSelfIllumTint "[1.000000 1.000000 1.000000 0.000000]"
 	TextureSelfIllumMask "materials/default/default_rimmask.tga"
@@ -43,6 +43,13 @@ Layer0
 	//---- Texture Address Mode ----
 	g_nTextureAddressModeU "0" // Wrap
 	g_nTextureAddressModeV "0" // Wrap
+
+	UnusedVariables
+	{
+		"g_flAlphaTestReference" "0.5"
+		"g_flAntiAliasedEdgeStrength" "1"
+		"TextureTranslucency" ""
+	}
 
 
 	VariableState
