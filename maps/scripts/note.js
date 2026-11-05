@@ -7,6 +7,8 @@ const NOTE_CLOSE_RADIUS = 64;
 const TRUE_ENDING_NOTE_NAME = "note_ending_secret";
 const TRUE_ENDING_NOTE_TEXT = "\\n\\n\\n\\n\\n";
 const TRUE_ENDING_CODE_LENGTH = 10;
+const KEYPAD_SCRIPT_ENTITY_NAME = "script_keypad";
+const TRUE_ENDING_KEYPAD_CODE_INPUT = "keypad_true_ending_code";
 
 const NOTES = {
     note_1: "This is the first readable note.\\nThis line starts below it.",
@@ -34,6 +36,29 @@ function GenerateTrueEndingCode() {
 function EnableTrueEndingNote() {
     const code = GenerateTrueEndingCode();
     SetTrueEndingNoteCode(code);
+    SendTrueEndingCodeToKeypad(code);
+}
+
+function SendTrueEndingCodeToKeypad(code) {
+    Instance.EntFireAtName({
+        name: KEYPAD_SCRIPT_ENTITY_NAME,
+        input: "RunScriptInput",
+        value: `${TRUE_ENDING_KEYPAD_CODE_INPUT}_begin`
+    });
+
+    for (const digit of code) {
+        Instance.EntFireAtName({
+            name: KEYPAD_SCRIPT_ENTITY_NAME,
+            input: "RunScriptInput",
+            value: `${TRUE_ENDING_KEYPAD_CODE_INPUT}_digit_${digit}`
+        });
+    }
+
+    Instance.EntFireAtName({
+        name: KEYPAD_SCRIPT_ENTITY_NAME,
+        input: "RunScriptInput",
+        value: `${TRUE_ENDING_KEYPAD_CODE_INPUT}_commit`
+    });
 }
 
 function GetNoteLayout() {
