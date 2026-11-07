@@ -11,14 +11,14 @@ const TIMER_CONFIGS = {
     },
 	
 	floor_1_doors: {
-        duration: 15,
+        duration: 10,
         textEntity: "text_floor_1_doors_timer",
         finishTarget: "relay_open_floor_1_doors",
         finishInput: "Trigger"
     },
 	
 	floor_2_doors: {
-        duration: 20,
+        duration: 10,
         textEntity: "text_floor_2_doors_timer",
         finishTarget: "relay_open_floor_2_doors",
         finishInput: "Trigger"
