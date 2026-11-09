@@ -9,20 +9,35 @@ const UPDATE_INTERVAL = 0.5;
 const BACKOFF_TIME = 0.15;
 
 const CRANE_CONFIGS = {
-    crane_1: {
-        showInput: "ShowCrane",
-        hookInput: "CraneHookTouch",
+    crane_secret: {
+        showInput: "show_secret_crane",
         collisionInput: "CraneCollision",
-        cameraEnterTime: 1.5,
+        cameraEnterTime: 2,
         cameraExitTime: 1.0,
         cameraPosition: { x: 717, y: 732, z: 1017 },
         cameraAngles: { pitch: 38, yaw: -61, roll: 0 },
-        hookTrigger: "crane_pulley_hook",
+        hookTrigger: "crane_pulley_secret_hook",
         components: {
-            head: "crane_head",
-            headPush: "crane_head_push",
-            trolley: "crane_trolley",
-            pulley: "crane_pulley"
+            head: "crane_head_secret",
+            headPush: "crane_head_push_secret",
+            trolley: "crane_trolley_secret",
+            pulley: "crane_pulley_secret"
+        }
+    },
+	
+	crane_normal: {
+        showInput: "show_normal_crane",
+        collisionInput: "CraneCollision",
+        cameraEnterTime: 2,
+        cameraExitTime: 1.0,
+        cameraPosition: { x: 574, y: 1190, z: 1700 },
+        cameraAngles: { pitch: 46, yaw: -32, roll: 0 },
+        hookTrigger: "crane_pulley_normal_hook",
+        components: {
+            head: "crane_head_normal",
+            headPush: "crane_head_push_normal",
+            trolley: "crane_trolley_normal",
+            pulley: "crane_pulley_normal"
         }
     }
 };
@@ -37,7 +52,8 @@ const STATIC_COLLISIONS = [
 
 const COLLISION_MOVERS = [
     "cargo_container_1",
-    "crane_pulley_model"
+    "crane_pulley_normal_model",
+    "crane_pulley_secret_model"
 ];
 
 let craneLayout = null;
@@ -339,8 +355,17 @@ function CheckHook(craneId, config, state, now) {
 function Update() {
     const now = Instance.GetGameTime();
     UpdateCameras(now);
-    for (const [id, config] of Object.entries(CRANE_CONFIGS)) CheckHook(id, config, states.get(id), now);
-    Instance.SetNextThink(cameras.size > 0 ? now : now + UPDATE_INTERVAL);
+
+    const activeCraneIds = new Set(activeUsers.values());
+    for (const id of activeCraneIds) {
+        CheckHook(id, CRANE_CONFIGS[id], states.get(id), now);
+    }
+
+    if (cameras.size > 0) {
+        Instance.SetNextThink(now);
+    } else if (activeUsers.size > 0) {
+        Instance.SetNextThink(now + UPDATE_INTERVAL);
+    }
 }
 
 for (const [id, config] of Object.entries(CRANE_CONFIGS)) {
@@ -349,7 +374,6 @@ for (const [id, config] of Object.entries(CRANE_CONFIGS)) {
         if (player) ShowControls(player, id);
         else Instance.Msg(`crane.js: ${config.showInput} needs a player activator or caller`);
     });
-    Instance.OnScriptInput(config.hookInput, () => TryHook(id, config.hookInput));
     Instance.OnScriptInput(config.collisionInput, ({ caller, activator }) => HandleCollision(id, caller, activator));
 }
 
@@ -373,7 +397,6 @@ Instance.OnCustomHudClicked((event) => {
 });
 
 Instance.SetThink(Update);
-Instance.SetNextThink(Instance.GetGameTime() + UPDATE_INTERVAL);
 
 Instance.OnPlayerDisconnect((event) => {
     const id = activeUsers.get(event.playerSlot);
