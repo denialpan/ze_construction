@@ -7,11 +7,14 @@ const CAMERA_CONTROLLED = 1;
 const HOOK_DISTANCE = 32;
 const UPDATE_INTERVAL = 0.5;
 const BACKOFF_TIME = 0.15;
+const START_POSITION_VALIDATION_TIME = 0.1;
+const START_POSITION_MOVE_SPEED = 9999;
 
 const CRANE_CONFIGS = {
     crane_secret: {
         showInput: "show_secret_crane",
         collisionInput: "CraneCollision",
+        moveSpeed: 100,
         cameraEnterTime: 2,
         cameraExitTime: 1.0,
         cameraPosition: { x: 717, y: 732, z: 1017 },
@@ -28,6 +31,7 @@ const CRANE_CONFIGS = {
 	crane_normal: {
         showInput: "show_normal_crane",
         collisionInput: "CraneCollision",
+        moveSpeed: 100,
         cameraEnterTime: 2,
         cameraExitTime: 1.0,
         cameraPosition: { x: 574, y: 1190, z: 1700 },
@@ -65,6 +69,9 @@ const states = new Map(Object.keys(CRANE_CONFIGS).map((id) => [id, {
     nextHookCheck: 0,
     hookRangePrinted: false,
     backoffUntil: 0,
+    randomizingStart: false,
+    startCollisionDetected: false,
+    startValidationEndsAt: 0,
     motion: { head: 0, trolley: null, pulley: null }
 }]));
 
@@ -103,6 +110,23 @@ function GetEntityName(entity) {
     return entity && entity.IsValid() && typeof entity.GetEntityName === "function"
         ? entity.GetEntityName()
         : "";
+}
+
+function CollisionEntityBelongsToCrane(entity, config) {
+    let current = entity;
+
+    for (let depth = 0; depth < 4 && current && current.IsValid(); depth++) {
+        const name = GetEntityName(current);
+        for (const component of ["head", "trolley", "pulley"]) {
+            const componentName = config.components[component];
+            if (name === componentName || name.startsWith(`${componentName}_`)) return true;
+        }
+
+        if (typeof current.GetParent !== "function") break;
+        current = current.GetParent();
+    }
+
+    return false;
 }
 
 function Distance(a, b) {
@@ -263,7 +287,7 @@ function SetHeadSpeed(config, state, speed) {
 
 function MoveComponent(config, state, component, input, direction) {
     const name = config.components[component];
-    Instance.EntFireAtName({ name, input: "SetSpeed", value: 100 });
+    Instance.EntFireAtName({ name, input: "SetSpeed", value: config.moveSpeed });
     Instance.EntFireAtName({ name, input });
     state.motion[component] = direction;
 }
@@ -282,7 +306,7 @@ function StopAll(config, state) {
 function ReverseBriefly(config, component, direction) {
     if (!direction) return;
     const name = config.components[component];
-    Instance.EntFireAtName({ name, input: "SetSpeed", value: 100 });
+    Instance.EntFireAtName({ name, input: "SetSpeed", value: config.moveSpeed });
     Instance.EntFireAtName({ name, input: direction === "open" ? "Close" : "Open" });
     Instance.EntFireAtName({ name, input: "SetSpeed", value: 0, delay: BACKOFF_TIME });
 }
@@ -302,12 +326,23 @@ function BackOff(craneId, config, state) {
 function HandleCollision(craneId, caller, activator) {
     const config = CRANE_CONFIGS[craneId];
     const state = states.get(craneId);
-    if (Instance.GetGameTime() < state.backoffUntil) return;
     const callerName = GetEntityName(caller);
     const activatorName = GetEntityName(activator);
     const hitStatic = STATIC_COLLISIONS.includes(callerName) || STATIC_COLLISIONS.includes(activatorName);
     const hitMover = COLLISION_MOVERS.includes(callerName) || COLLISION_MOVERS.includes(activatorName);
     if (!hitStatic || !hitMover) return;
+
+    const belongsToCrane = CollisionEntityBelongsToCrane(caller, config) ||
+        CollisionEntityBelongsToCrane(activator, config);
+    if (!belongsToCrane) return;
+
+    if (state.randomizingStart) {
+        state.startCollisionDetected = true;
+        Instance.SetNextThink(Instance.GetGameTime());
+        return;
+    }
+
+    if (Instance.GetGameTime() < state.backoffUntil) return;
     BackOff(craneId, config, state);
 }
 
@@ -356,16 +391,97 @@ function Update() {
     const now = Instance.GetGameTime();
     UpdateCameras(now);
 
+    let nextStartValidationTime = undefined;
+    for (const [craneId, state] of states) {
+        if (!state.randomizingStart) continue;
+
+        if (state.startCollisionDetected) {
+            ApplyRandomCraneStartPosition(craneId, CRANE_CONFIGS[craneId], state, now);
+        } else if (now >= state.startValidationEndsAt) {
+            RestoreCraneLinearMoveSpeed(CRANE_CONFIGS[craneId]);
+            state.randomizingStart = false;
+            continue;
+        }
+
+        nextStartValidationTime = nextStartValidationTime === undefined
+            ? state.startValidationEndsAt
+            : Math.min(nextStartValidationTime, state.startValidationEndsAt);
+    }
+
     const activeCraneIds = new Set(activeUsers.values());
     for (const id of activeCraneIds) {
         CheckHook(id, CRANE_CONFIGS[id], states.get(id), now);
     }
 
-    if (cameras.size > 0) {
-        Instance.SetNextThink(now);
-    } else if (activeUsers.size > 0) {
-        Instance.SetNextThink(now + UPDATE_INTERVAL);
+    let nextThinkTime = undefined;
+    if (cameras.size > 0) nextThinkTime = now;
+    else if (activeUsers.size > 0) nextThinkTime = now + UPDATE_INTERVAL;
+
+    if (nextStartValidationTime !== undefined) {
+        nextThinkTime = nextThinkTime === undefined
+            ? nextStartValidationTime
+            : Math.min(nextThinkTime, nextStartValidationTime);
     }
+
+    if (nextThinkTime !== undefined) Instance.SetNextThink(nextThinkTime);
+}
+
+function ApplyRandomCraneStartPosition(craneId, config, state, now) {
+    state.motion = { head: 0, trolley: null, pulley: null };
+    state.backoffUntil = 0;
+    state.randomizingStart = true;
+    state.startCollisionDetected = false;
+    state.startValidationEndsAt = now + START_POSITION_VALIDATION_TIME;
+
+    Instance.EntFireAtName({
+        name: config.components.trolley,
+        input: "SetSpeed",
+        value: START_POSITION_MOVE_SPEED
+    });
+    Instance.EntFireAtName({
+        name: config.components.pulley,
+        input: "SetSpeed",
+        value: START_POSITION_MOVE_SPEED
+    });
+
+    Instance.EntFireAtName({
+        name: config.components.head,
+        input: "SetStartPos",
+        value: { x: 0, y: Math.random() * 360, z: 0 }
+    });
+    Instance.EntFireAtName({ name: config.components.head, input: "SnapToStartPos" });
+    Instance.EntFireAtName({
+        name: config.components.trolley,
+        input: "SetPosition",
+        value: Math.random()
+    });
+    Instance.EntFireAtName({
+        name: config.components.pulley,
+        input: "SetPosition",
+        value: Math.random()
+    });
+
+}
+
+function RestoreCraneLinearMoveSpeed(config) {
+    Instance.EntFireAtName({
+        name: config.components.trolley,
+        input: "SetSpeed",
+        value: config.moveSpeed
+    });
+    Instance.EntFireAtName({
+        name: config.components.pulley,
+        input: "SetSpeed",
+        value: config.moveSpeed
+    });
+}
+
+function RandomizeCraneStartPositions() {
+    const now = Instance.GetGameTime();
+    for (const [craneId, config] of Object.entries(CRANE_CONFIGS)) {
+        ApplyRandomCraneStartPosition(craneId, config, states.get(craneId), now);
+    }
+    Instance.SetNextThink(now + START_POSITION_VALIDATION_TIME);
 }
 
 for (const [id, config] of Object.entries(CRANE_CONFIGS)) {
@@ -397,6 +513,7 @@ Instance.OnCustomHudClicked((event) => {
 });
 
 Instance.SetThink(Update);
+Instance.OnRoundStart(RandomizeCraneStartPositions);
 
 Instance.OnPlayerDisconnect((event) => {
     const id = activeUsers.get(event.playerSlot);
