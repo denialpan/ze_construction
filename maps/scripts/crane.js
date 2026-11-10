@@ -25,7 +25,8 @@ const CRANE_CONFIGS = {
             head: "crane_head_secret",
             headPush: "crane_head_push_secret",
             trolley: "crane_trolley_secret",
-            pulley: "crane_pulley_secret"
+            pulley: "crane_pulley_secret",
+			pulleyRotation: "crane_pulley_rotation_secret"
         }
     },
 	
@@ -43,7 +44,8 @@ const CRANE_CONFIGS = {
             head: "crane_head_normal",
             headPush: "crane_head_push_normal",
             trolley: "crane_trolley_normal",
-            pulley: "crane_pulley_normal"
+            pulley: "crane_pulley_normal",
+			pulleyRotation: "crane_pulley_rotation_normal"
         }
     }
 };
@@ -74,7 +76,7 @@ const states = new Map(Object.keys(CRANE_CONFIGS).map((id) => [id, {
     randomizingStart: false,
     startCollisionDetected: false,
     startValidationEndsAt: 0,
-    motion: { head: 0, trolley: null, pulley: null }
+    motion: { head: 0, trolley: null, pulley: null, pulleyRotation: 0 }
 }]));
 
 function GetLayout() {
@@ -287,6 +289,13 @@ function SetHeadSpeed(config, state, speed) {
     state.motion.head = speed;
 }
 
+function SetPulleyRotationSpeed(config, state, speed) {
+    const pulleyRotation = config.components.pulleyRotation;
+    if (!pulleyRotation) return;
+    Instance.EntFireAtName({ name: pulleyRotation, input: "SetSpeed", value: speed });
+    state.motion.pulleyRotation = speed;
+}
+
 function MoveComponent(config, state, component, input, direction) {
     const name = config.components[component];
     Instance.EntFireAtName({ name, input: "SetSpeed", value: config.moveSpeed });
@@ -301,6 +310,7 @@ function StopComponent(config, state, component) {
 
 function StopAll(config, state) {
     SetHeadSpeed(config, state, 0);
+    SetPulleyRotationSpeed(config, state, 0);
     StopComponent(config, state, "trolley");
     StopComponent(config, state, "pulley");
 }
@@ -318,9 +328,22 @@ function BackOff(craneId, config, state) {
         Instance.EntFireAtName({ name: config.components.head, input: "SetSpeed", value: -state.motion.head });
         Instance.EntFireAtName({ name: config.components.head, input: "SetSpeed", value: 0, delay: BACKOFF_TIME });
     }
+    if (state.motion.pulleyRotation !== 0 && config.components.pulleyRotation) {
+        Instance.EntFireAtName({
+            name: config.components.pulleyRotation,
+            input: "SetSpeed",
+            value: -state.motion.pulleyRotation
+        });
+        Instance.EntFireAtName({
+            name: config.components.pulleyRotation,
+            input: "SetSpeed",
+            value: 0,
+            delay: BACKOFF_TIME
+        });
+    }
     ReverseBriefly(config, "trolley", state.motion.trolley);
     ReverseBriefly(config, "pulley", state.motion.pulley);
-    state.motion = { head: 0, trolley: null, pulley: null };
+    state.motion = { head: 0, trolley: null, pulley: null, pulleyRotation: 0 };
     state.backoffUntil = Instance.GetGameTime() + BACKOFF_TIME;
     Instance.Msg(`crane.js: ${craneId} collision backoff applied.`);
 }
@@ -367,12 +390,13 @@ function TryHook(craneId, source) {
     const config = CRANE_CONFIGS[craneId];
     const state = states.get(craneId);
     if (state.hookedCargo && state.hookedCargo.IsValid()) return;
-    const pulley = GetNamedEntity(config.components.pulley);
+    const cargoParentName = config.components.pulleyRotation || config.components.pulley;
+    const cargoParent = GetNamedEntity(cargoParentName);
     const cargo = GetClosestCargo(config);
-    if (!pulley || !cargo || cargo.distance > HOOK_DISTANCE) return;
-    cargo.cargo.SetParent(pulley);
+    if (!cargoParent || !cargo || cargo.distance > HOOK_DISTANCE) return;
+    cargo.cargo.SetParent(cargoParent);
     state.hookedCargo = cargo.cargo;
-    Instance.Msg(`crane.js: ${craneId} hooked ${cargo.cargoName} from ${source}.`);
+    Instance.Msg(`crane.js: ${craneId} hooked ${cargo.cargoName} to ${cargoParentName} from ${source}.`);
 }
 
 function CheckHook(craneId, config, state, now) {
@@ -432,7 +456,7 @@ function ApplyRandomCraneStartPosition(craneId, config, state, now) {
     const [minimumHeadDegrees, maximumHeadDegrees] = config.headSpawnDegreeRange;
     const headDegrees = minimumHeadDegrees + Math.random() * (maximumHeadDegrees - minimumHeadDegrees);
 
-    state.motion = { head: 0, trolley: null, pulley: null };
+    state.motion = { head: 0, trolley: null, pulley: null, pulleyRotation: 0 };
     state.backoffUntil = 0;
     state.randomizingStart = true;
     state.startCollisionDetected = false;
@@ -512,6 +536,8 @@ Instance.OnCustomHudClicked((event) => {
         case "crane_trolley_backward": MoveComponent(config, state, "trolley", "Close", "close"); break;
         case "crane_pulley_up": MoveComponent(config, state, "pulley", "Open", "open"); break;
         case "crane_pulley_down": MoveComponent(config, state, "pulley", "Close", "close"); break;
+        case "crane_pulley_rotate_ccw": SetPulleyRotationSpeed(config, state, 0.2); break;
+        case "crane_pulley_rotate_cw": SetPulleyRotationSpeed(config, state, -0.2); break;
         case "crane_stop": StopAll(config, state); break;
         case "crane_cancel": HideControls(slot); break;
     }

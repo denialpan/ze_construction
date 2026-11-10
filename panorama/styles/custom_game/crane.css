@@ -4,7 +4,7 @@
 }
 
 #crane_panel {
-    width: 854px;
+    width: 1018px;
     horizontal-align: center;
     vertical-align: center;
     flow-children: down;
@@ -124,6 +124,11 @@
     box-shadow: #6f5812 0px 6px 0px 0px;
 }
 
+.OrangeButton {
+    background-color: #d87524;
+    box-shadow: #74370e 0px 6px 0px 0px;
+}
+
 .ControlButton:hover,
 .StopButton:hover,
 .CloseButton:hover {
@@ -146,6 +151,11 @@
 .YellowButton:hover {
     background-color: #e8c63b;
     box-shadow: #6f5812 0px 7px 0px 0px;
+}
+
+.OrangeButton:hover {
+    background-color: #ed8a32;
+    box-shadow: #74370e 0px 7px 0px 0px;
 }
 
 .ControlButton:active,
@@ -173,6 +183,11 @@
 .YellowButton:active {
     background-color: #a98416;
     box-shadow: #6f5812 0px 2px 0px 0px;
+}
+
+.OrangeButton:active {
+    background-color: #a94f14;
+    box-shadow: #74370e 0px 2px 0px 0px;
 }
 
 .ControlButton Label,

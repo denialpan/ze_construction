@@ -29,6 +29,12 @@
                 <Button id="crane_pulley_down" class="ControlButton CircleButton IconButton YellowButton">
                     <Image class="ButtonIcon MoveIcon InvertIcon RotateBack" src="file://{images}/arrow.png" />
                 </Button>
+                <Button id="crane_pulley_rotate_ccw" class="ControlButton CircleButton IconButton OrangeButton">
+                    <Image class="ButtonIcon MoveIcon InvertIcon RotateLeft" src="file://{images}/arrow.png" />
+                </Button>
+                <Button id="crane_pulley_rotate_cw" class="ControlButton CircleButton IconButton OrangeButton">
+                    <Image class="ButtonIcon MoveIcon InvertIcon RotateRight" src="file://{images}/arrow.png" />
+                </Button>
                 <Panel class="ButtonDivider" />
                 <Button id="crane_stop" class="StopButton"><Label text="STOP" /></Button>
             </Panel>
