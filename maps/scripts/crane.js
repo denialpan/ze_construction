@@ -15,6 +15,7 @@ const CRANE_CONFIGS = {
         showInput: "show_secret_crane",
         collisionInput: "CraneCollision",
         moveSpeed: 100,
+		headSpawnDegreeRange: [90, 360],
         cameraEnterTime: 2,
         cameraExitTime: 1.0,
         cameraPosition: { x: 717, y: 732, z: 1017 },
@@ -32,6 +33,7 @@ const CRANE_CONFIGS = {
         showInput: "show_normal_crane",
         collisionInput: "CraneCollision",
         moveSpeed: 100,
+		headSpawnDegreeRange: [0, 360],
         cameraEnterTime: 2,
         cameraExitTime: 1.0,
         cameraPosition: { x: 574, y: 1190, z: 1700 },
@@ -427,6 +429,9 @@ function Update() {
 }
 
 function ApplyRandomCraneStartPosition(craneId, config, state, now) {
+    const [minimumHeadDegrees, maximumHeadDegrees] = config.headSpawnDegreeRange;
+    const headDegrees = minimumHeadDegrees + Math.random() * (maximumHeadDegrees - minimumHeadDegrees);
+
     state.motion = { head: 0, trolley: null, pulley: null };
     state.backoffUntil = 0;
     state.randomizingStart = true;
@@ -447,7 +452,7 @@ function ApplyRandomCraneStartPosition(craneId, config, state, now) {
     Instance.EntFireAtName({
         name: config.components.head,
         input: "SetStartPos",
-        value: { x: 0, y: Math.random() * 360, z: 0 }
+        value: { x: 0, y: headDegrees, z: 0 }
     });
     Instance.EntFireAtName({ name: config.components.head, input: "SnapToStartPos" });
     Instance.EntFireAtName({
