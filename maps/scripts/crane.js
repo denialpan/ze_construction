@@ -432,8 +432,12 @@ function AttachCargoFromHookTouch(craneId, cargoHookName) {
         return;
     }
 
+    const hookAngles = cargoHook.GetAbsAngles();
+    const parentOrigin = cargoParent.GetAbsOrigin();
     Instance.Msg(`crane.js: calling SetParent on ${DescribeEntity(cargoHook)} with ${DescribeEntity(cargoParent)}.`);
     cargoHook.SetParent(cargoParent);
+    cargoHook.Teleport({ position: parentOrigin, angles: hookAngles });
+    Instance.Msg(`crane.js: snapped ${cargoHookName} origin to ${cargoParentName} at ${parentOrigin.x}, ${parentOrigin.y}, ${parentOrigin.z}.`);
 
     const actualParent = typeof cargoHook.GetParent === "function" ? cargoHook.GetParent() : undefined;
     if (actualParent === cargoParent) {
