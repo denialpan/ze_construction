@@ -20,7 +20,7 @@ const CRANE_CONFIGS = {
         cameraExitTime: 1.0,
         cameraPosition: { x: 717, y: 732, z: 1017 },
         cameraAngles: { pitch: 38, yaw: -61, roll: 0 },
-        hookTrigger: "crane_pulley_secret_hook",
+        hookTrigger: "crane_pulley_rotation_secret",
         components: {
             head: "crane_head_secret",
             headPush: "crane_head_push_secret",
@@ -39,7 +39,7 @@ const CRANE_CONFIGS = {
         cameraExitTime: 1.0,
         cameraPosition: { x: 574, y: 1190, z: 1700 },
         cameraAngles: { pitch: 46, yaw: -32, roll: 0 },
-        hookTrigger: "crane_pulley_normal_hook",
+        hookTrigger: "crane_pulley_rotation_normal",
         components: {
             head: "crane_head_normal",
             headPush: "crane_head_push_normal",
@@ -50,8 +50,25 @@ const CRANE_CONFIGS = {
     }
 };
 
+const RANDOM_ENTITY_SPAWN_CONFIGS = {
+		cargo_surf_spawns: {
+			entityName: "cargo_surf_hook",
+			transforms: [
+				{
+					position: { x: 1820, y: 304, z: 15 },
+          angles: { pitch: 0, yaw: 0, roll: 0 }
+        },
+        {
+					position: { x: 1688, y: 1182, z: 392 },
+					angles: { pitch: -10, yaw: 60, roll: 0 }
+        }
+      ]
+		}
+};
+
 const CARGO_HOOKS = [
-    "cargo_container_1_hook"
+    "cargo_container_1_hook",
+	"cargo_surf_hook"
 ];
 
 const STATIC_COLLISIONS = [
@@ -61,7 +78,8 @@ const STATIC_COLLISIONS = [
 const COLLISION_MOVERS = [
     "cargo_container_1",
     "crane_pulley_normal_model",
-    "crane_pulley_secret_model"
+    "crane_pulley_secret_model",
+	"cargo_surf"
 ];
 
 let craneLayout = null;
@@ -513,6 +531,28 @@ function RandomizeCraneStartPositions() {
     Instance.SetNextThink(now + START_POSITION_VALIDATION_TIME);
 }
 
+function RandomizeConfiguredEntitySpawns() {
+    for (const config of Object.values(RANDOM_ENTITY_SPAWN_CONFIGS)) {
+        if (!config.entityName || !Array.isArray(config.transforms) || config.transforms.length === 0) {
+            continue;
+        }
+
+        const entity = GetNamedEntity(config.entityName);
+        if (!entity) continue;
+
+        const transform = config.transforms[Math.floor(Math.random() * config.transforms.length)];
+        entity.Teleport({
+            position: transform.position,
+            angles: transform.angles
+        });
+    }
+}
+
+function RandomizeAllSpawnPositions() {
+    RandomizeCraneStartPositions();
+    RandomizeConfiguredEntitySpawns();
+}
+
 for (const [id, config] of Object.entries(CRANE_CONFIGS)) {
     Instance.OnScriptInput(config.showInput, ({ activator, caller }) => {
         const player = GetPlayer(activator) || GetPlayer(caller);
@@ -544,7 +584,8 @@ Instance.OnCustomHudClicked((event) => {
 });
 
 Instance.SetThink(Update);
-Instance.OnRoundStart(RandomizeCraneStartPositions);
+Instance.OnActivate(RandomizeAllSpawnPositions);
+Instance.OnRoundStart(RandomizeAllSpawnPositions);
 
 Instance.OnPlayerDisconnect((event) => {
     const id = activeUsers.get(event.playerSlot);
