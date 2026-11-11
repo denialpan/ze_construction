@@ -4,70 +4,64 @@ const LAYOUT_NAME = "hud_crane";
 const PANEL_ID = "crane_panel";
 const CAMERA_DISABLED = 0;
 const CAMERA_CONTROLLED = 1;
-const HOOK_DISTANCE = 32;
+const HOOK_DISTANCE = 16;
 const UPDATE_INTERVAL = 0.5;
 const BACKOFF_TIME = 0.15;
 const START_POSITION_VALIDATION_TIME = 0.1;
 const START_POSITION_MOVE_SPEED = 9999;
 
 const CRANE_CONFIGS = {
-    crane_secret: {
-        showInput: "show_secret_crane",
-        collisionInput: "CraneCollision",
-        moveSpeed: 100,
+	crane_secret: {
+		showInput: "show_secret_crane",
+		collisionInput: "CraneCollision",
+		moveSpeed: 100,
 		headSpawnDegreeRange: [90, 360],
-        cameraEnterTime: 2,
-        cameraExitTime: 1.0,
-        cameraPosition: { x: 717, y: 732, z: 1017 },
-        cameraAngles: { pitch: 38, yaw: -61, roll: 0 },
-        hookTrigger: "crane_pulley_rotation_secret",
-        components: {
-            head: "crane_head_secret",
-            headPush: "crane_head_push_secret",
-            trolley: "crane_trolley_secret",
-            pulley: "crane_pulley_secret",
+		cameraEnterTime: 2,
+		cameraExitTime: 1.0,
+		cameraPosition: { x: 717, y: 732, z: 1017 },
+		cameraAngles: { pitch: 38, yaw: -61, roll: 0 },
+		hookTrigger: "crane_pulley_rotation_secret",
+		components: {
+			head: "crane_head_secret",
+			headPush: "crane_head_push_secret",
+			trolley: "crane_trolley_secret",
+			pulley: "crane_pulley_secret",
 			pulleyRotation: "crane_pulley_rotation_secret"
-        }
-    },
+		}
+	},
 	
 	crane_normal: {
-        showInput: "show_normal_crane",
-        collisionInput: "CraneCollision",
-        moveSpeed: 100,
+		showInput: "show_normal_crane",
+		collisionInput: "CraneCollision",
+		moveSpeed: 100,
 		headSpawnDegreeRange: [0, 360],
-        cameraEnterTime: 2,
-        cameraExitTime: 1.0,
-        cameraPosition: { x: 574, y: 1190, z: 1700 },
-        cameraAngles: { pitch: 46, yaw: -32, roll: 0 },
-        hookTrigger: "crane_pulley_rotation_normal",
-        components: {
-            head: "crane_head_normal",
-            headPush: "crane_head_push_normal",
-            trolley: "crane_trolley_normal",
-            pulley: "crane_pulley_normal",
+		cameraEnterTime: 2,
+		cameraExitTime: 1.0,
+		cameraPosition: { x: 574, y: 1190, z: 1700 },
+		cameraAngles: { pitch: 46, yaw: -32, roll: 0 },
+		hookTrigger: "crane_pulley_rotation_normal",
+		components: {
+			head: "crane_head_normal",
+			headPush: "crane_head_push_normal",
+			trolley: "crane_trolley_normal",
+			pulley: "crane_pulley_normal",
 			pulleyRotation: "crane_pulley_rotation_normal"
-        }
-    }
+		}
+	}
 };
 
 const RANDOM_ENTITY_SPAWN_CONFIGS = {
 		cargo_surf_spawns: {
 			entityName: "cargo_surf_hook",
-			transforms: [
-				{
-					position: { x: 1820, y: 304, z: 15 },
-          angles: { pitch: 0, yaw: 0, roll: 0 }
-        },
-        {
-					position: { x: 1688, y: 1182, z: 392 },
-					angles: { pitch: -10, yaw: 60, roll: 0 }
-        }
-      ]
+			center: { x: 1304, y: 1051 },
+			radiusRange: [64, 1024],
+			zRange: [43, 1067],
+			yawRange: [0, 360]
 		}
 };
 
 const CARGO_HOOKS = [
-    "cargo_container_1_hook",
+	"cargo_container_1_hook",
 	"cargo_surf_hook"
 ];
 
@@ -76,16 +70,22 @@ const STATIC_COLLISIONS = [
 ];
 
 const COLLISION_MOVERS = [
-    "cargo_container_1",
-    "crane_pulley_normal_model",
-    "crane_pulley_secret_model",
-	"cargo_surf"
+	"cargo_container_1",
+	"crane_pulley_normal_model",
+	"crane_pulley_secret_model",
+	"cargo_surf_collision"
 ];
 
 let craneLayout = null;
 const cameras = new Map();
 const activeUsers = new Map();
 const missingEntities = new Set();
+const invalidSpawnRegionReports = new Set();
+const randomSpawnStates = new Map(Object.keys(RANDOM_ENTITY_SPAWN_CONFIGS).map((configName) => [configName, {
+    validating: false,
+    collisionDetected: false,
+    validationEndsAt: 0
+}]));
 const states = new Map(Object.keys(CRANE_CONFIGS).map((id) => [id, {
     hookedCargo: null,
     nextHookCheck: 0,
@@ -372,6 +372,8 @@ function HandleCollision(craneId, caller, activator) {
     const callerName = GetEntityName(caller);
     const activatorName = GetEntityName(activator);
     const hitStatic = STATIC_COLLISIONS.includes(callerName) || STATIC_COLLISIONS.includes(activatorName);
+    if (hitStatic) HandleRandomSpawnCollision(caller, activator);
+
     const hitMover = COLLISION_MOVERS.includes(callerName) || COLLISION_MOVERS.includes(activatorName);
     if (!hitStatic || !hitMover) return;
 
@@ -452,6 +454,22 @@ function Update() {
             : Math.min(nextStartValidationTime, state.startValidationEndsAt);
     }
 
+    let nextEntityValidationTime = undefined;
+    for (const [configName, state] of randomSpawnStates) {
+        if (!state.validating) continue;
+
+        if (state.collisionDetected) {
+            ApplyRandomEntitySpawn(configName, RANDOM_ENTITY_SPAWN_CONFIGS[configName], state, now);
+        } else if (now >= state.validationEndsAt) {
+            state.validating = false;
+            continue;
+        }
+
+        nextEntityValidationTime = nextEntityValidationTime === undefined
+            ? state.validationEndsAt
+            : Math.min(nextEntityValidationTime, state.validationEndsAt);
+    }
+
     const activeCraneIds = new Set(activeUsers.values());
     for (const id of activeCraneIds) {
         CheckHook(id, CRANE_CONFIGS[id], states.get(id), now);
@@ -465,6 +483,12 @@ function Update() {
         nextThinkTime = nextThinkTime === undefined
             ? nextStartValidationTime
             : Math.min(nextThinkTime, nextStartValidationTime);
+    }
+
+    if (nextEntityValidationTime !== undefined) {
+        nextThinkTime = nextThinkTime === undefined
+            ? nextEntityValidationTime
+            : Math.min(nextThinkTime, nextEntityValidationTime);
     }
 
     if (nextThinkTime !== undefined) Instance.SetNextThink(nextThinkTime);
@@ -531,21 +555,98 @@ function RandomizeCraneStartPositions() {
     Instance.SetNextThink(now + START_POSITION_VALIDATION_TIME);
 }
 
+function RandomInRange(range) {
+    return range[0] + Math.random() * (range[1] - range[0]);
+}
+
+function SamplePointInAnnulus(config) {
+    const innerRadius = config.radiusRange[0];
+    const outerRadius = config.radiusRange[1];
+    const angle = Math.random() * Math.PI * 2;
+    const radius = Math.sqrt(
+        innerRadius * innerRadius + Math.random() *
+        (outerRadius * outerRadius - innerRadius * innerRadius)
+    );
+    return {
+        x: config.center.x + Math.cos(angle) * radius,
+        y: config.center.y + Math.sin(angle) * radius
+    };
+}
+
+function ReportInvalidSpawnRegion(configName) {
+    if (invalidSpawnRegionReports.has(configName)) return;
+    invalidSpawnRegionReports.add(configName);
+    Instance.Msg(`crane.js: random entity spawn config ${configName} has an invalid annulus or range.`);
+}
+
+function IsValidRandomSpawnConfig(config) {
+    const validCenter = Number.isFinite(config.center?.x) && Number.isFinite(config.center?.y);
+    const validRadiusRange = Array.isArray(config.radiusRange) && config.radiusRange.length === 2 &&
+        config.radiusRange.every(Number.isFinite) && config.radiusRange[0] >= 0 &&
+        config.radiusRange[1] > config.radiusRange[0];
+    const validZRange = Array.isArray(config.zRange) && config.zRange.length === 2 &&
+        config.zRange.every(Number.isFinite);
+    const validYawRange = Array.isArray(config.yawRange) && config.yawRange.length === 2 &&
+        config.yawRange.every(Number.isFinite);
+    return Boolean(config.entityName && validCenter && validRadiusRange && validZRange && validYawRange);
+}
+
+function EntityOrParentHasName(entity, entityName) {
+    let current = entity;
+    for (let depth = 0; depth < 4 && current && current.IsValid(); depth++) {
+        if (GetEntityName(current) === entityName) return true;
+        if (typeof current.GetParent !== "function") break;
+        current = current.GetParent();
+    }
+    return false;
+}
+
+function HandleRandomSpawnCollision(caller, activator) {
+    for (const [configName, config] of Object.entries(RANDOM_ENTITY_SPAWN_CONFIGS)) {
+        const state = randomSpawnStates.get(configName);
+        if (!state?.validating) continue;
+        if (!EntityOrParentHasName(caller, config.entityName) &&
+            !EntityOrParentHasName(activator, config.entityName)) continue;
+
+        state.collisionDetected = true;
+        Instance.SetNextThink(Instance.GetGameTime());
+    }
+}
+
+function ApplyRandomEntitySpawn(configName, config, state, now) {
+    const entity = GetNamedEntity(config.entityName);
+    if (!entity) {
+        state.validating = false;
+        return;
+    }
+
+    const horizontalPosition = SamplePointInAnnulus(config);
+    state.validating = true;
+    state.collisionDetected = false;
+    state.validationEndsAt = now + START_POSITION_VALIDATION_TIME;
+    entity.Teleport({
+        position: {
+            x: horizontalPosition.x,
+            y: horizontalPosition.y,
+            z: RandomInRange(config.zRange)
+        },
+        angles: { pitch: 0, yaw: RandomInRange(config.yawRange), roll: 0 }
+    });
+}
+
 function RandomizeConfiguredEntitySpawns() {
-    for (const config of Object.values(RANDOM_ENTITY_SPAWN_CONFIGS)) {
-        if (!config.entityName || !Array.isArray(config.transforms) || config.transforms.length === 0) {
+    const now = Instance.GetGameTime();
+    let hasValidation = false;
+    for (const [configName, config] of Object.entries(RANDOM_ENTITY_SPAWN_CONFIGS)) {
+        if (!IsValidRandomSpawnConfig(config)) {
+            ReportInvalidSpawnRegion(configName);
             continue;
         }
 
-        const entity = GetNamedEntity(config.entityName);
-        if (!entity) continue;
-
-        const transform = config.transforms[Math.floor(Math.random() * config.transforms.length)];
-        entity.Teleport({
-            position: transform.position,
-            angles: transform.angles
-        });
+        ApplyRandomEntitySpawn(configName, config, randomSpawnStates.get(configName), now);
+        hasValidation = true;
     }
+    if (hasValidation) Instance.SetNextThink(now + START_POSITION_VALIDATION_TIME);
 }
 
 function RandomizeAllSpawnPositions() {
