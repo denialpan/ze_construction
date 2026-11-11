@@ -65,11 +65,7 @@ const CARGO_HOOKS = [
 	"cargo_surf_hook"
 ];
 
-const STATIC_COLLISIONS = [
-    "crane_collision_static"
-];
-
-const COLLISION_MOVERS = [
+const DYNAMIC_COLLISION = [
 	"cargo_container_1",
 	"crane_pulley_normal_model",
 	"crane_pulley_secret_model",
@@ -136,23 +132,6 @@ function DescribeEntity(entity) {
     if (!entity || !entity.IsValid()) return "none";
     const className = typeof entity.GetClassName === "function" ? entity.GetClassName() : "unknown_class";
     return `${className}:${GetEntityName(entity) || "unnamed"}`;
-}
-
-function CollisionEntityBelongsToCrane(entity, config) {
-    let current = entity;
-
-    for (let depth = 0; depth < 4 && current && current.IsValid(); depth++) {
-        const name = GetEntityName(current);
-        for (const component of ["head", "trolley", "pulley"]) {
-            const componentName = config.components[component];
-            if (name === componentName || name.startsWith(`${componentName}_`)) return true;
-        }
-
-        if (typeof current.GetParent !== "function") break;
-        current = current.GetParent();
-    }
-
-    return false;
 }
 
 function Lerp(a, b, t) {
@@ -366,29 +345,31 @@ function BackOff(craneId, config, state) {
     Instance.Msg(`crane.js: ${craneId} collision backoff applied.`);
 }
 
-function HandleCollision(craneId, caller, activator) {
-    const config = CRANE_CONFIGS[craneId];
-    const state = states.get(craneId);
-    const callerName = GetEntityName(caller);
-    const activatorName = GetEntityName(activator);
-    const hitStatic = STATIC_COLLISIONS.includes(callerName) || STATIC_COLLISIONS.includes(activatorName);
-    if (hitStatic) HandleRandomSpawnCollision(caller, activator);
+function HandleCollision(caller, activator) {
+    if (!caller || !caller.IsValid() || caller.GetClassName() !== "trigger_multiple") return;
 
-    const hitMover = COLLISION_MOVERS.includes(callerName) || COLLISION_MOVERS.includes(activatorName);
-    if (!hitStatic || !hitMover) return;
+    const dynamicCollisionName = GetEntityName(activator);
+    if (!DYNAMIC_COLLISION.includes(dynamicCollisionName)) return;
 
-    const belongsToCrane = CollisionEntityBelongsToCrane(caller, config) ||
-        CollisionEntityBelongsToCrane(activator, config);
-    if (!belongsToCrane) return;
+    Instance.Msg(`crane.js: collision trigger=${GetEntityName(caller)} dynamic=${dynamicCollisionName}.`);
+    HandleRandomSpawnCollision(caller, activator);
 
-    if (state.randomizingStart) {
-        state.startCollisionDetected = true;
-        Instance.SetNextThink(Instance.GetGameTime());
-        return;
+    const affectedCraneIds = new Set(activeUsers.values());
+    for (const [craneId, state] of states) {
+        if (state.randomizingStart) affectedCraneIds.add(craneId);
     }
 
-    if (Instance.GetGameTime() < state.backoffUntil) return;
-    BackOff(craneId, config, state);
+    for (const craneId of affectedCraneIds) {
+        const state = states.get(craneId);
+        if (state.randomizingStart) {
+            state.startCollisionDetected = true;
+            Instance.SetNextThink(Instance.GetGameTime());
+            continue;
+        }
+
+        if (Instance.GetGameTime() < state.backoffUntil) continue;
+        BackOff(craneId, CRANE_CONFIGS[craneId], state);
+    }
 }
 
 function GetCraneIdFromHookEntity(entity) {
@@ -691,7 +672,11 @@ for (const [id, config] of Object.entries(CRANE_CONFIGS)) {
         if (player) ShowControls(player, id);
         else Instance.Msg(`crane.js: ${config.showInput} needs a player activator or caller`);
     });
-    Instance.OnScriptInput(config.collisionInput, ({ caller, activator }) => HandleCollision(id, caller, activator));
+}
+
+const collisionInputs = new Set(Object.values(CRANE_CONFIGS).map((config) => config.collisionInput));
+for (const collisionInput of collisionInputs) {
+    Instance.OnScriptInput(collisionInput, ({ caller, activator }) => HandleCollision(caller, activator));
 }
 
 Instance.OnScriptInput(HOOK_TOUCH_INPUT, ({ caller, activator }) => {
