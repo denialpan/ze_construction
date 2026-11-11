@@ -4,11 +4,11 @@ const LAYOUT_NAME = "hud_crane";
 const PANEL_ID = "crane_panel";
 const CAMERA_DISABLED = 0;
 const CAMERA_CONTROLLED = 1;
-const HOOK_DISTANCE = 16;
 const UPDATE_INTERVAL = 0.5;
 const BACKOFF_TIME = 0.15;
 const START_POSITION_VALIDATION_TIME = 0.1;
 const START_POSITION_MOVE_SPEED = 9999;
+const HOOK_TOUCH_INPUT = "CraneHookTouch";
 
 const CRANE_CONFIGS = {
 	crane_secret: {
@@ -88,8 +88,6 @@ const randomSpawnStates = new Map(Object.keys(RANDOM_ENTITY_SPAWN_CONFIGS).map((
 }]));
 const states = new Map(Object.keys(CRANE_CONFIGS).map((id) => [id, {
     hookedCargo: null,
-    nextHookCheck: 0,
-    hookRangePrinted: false,
     backoffUntil: 0,
     randomizingStart: false,
     startCollisionDetected: false,
@@ -134,6 +132,12 @@ function GetEntityName(entity) {
         : "";
 }
 
+function DescribeEntity(entity) {
+    if (!entity || !entity.IsValid()) return "none";
+    const className = typeof entity.GetClassName === "function" ? entity.GetClassName() : "unknown_class";
+    return `${className}:${GetEntityName(entity) || "unnamed"}`;
+}
+
 function CollisionEntityBelongsToCrane(entity, config) {
     let current = entity;
 
@@ -149,10 +153,6 @@ function CollisionEntityBelongsToCrane(entity, config) {
     }
 
     return false;
-}
-
-function Distance(a, b) {
-    return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2);
 }
 
 function Lerp(a, b, t) {
@@ -391,46 +391,77 @@ function HandleCollision(craneId, caller, activator) {
     BackOff(craneId, config, state);
 }
 
-function GetClosestCargo(config) {
-    const trigger = GetNamedEntity(config.hookTrigger);
-    if (!trigger) return undefined;
-    let closest;
-    for (const hookName of CARGO_HOOKS) {
-        const cargoName = hookName.replace(/_hook$/, "");
-        const cargo = GetNamedEntity(cargoName);
-        const hook = GetNamedEntity(hookName);
-        if (!cargo || !hook) continue;
-        const distance = Distance(trigger.GetAbsOrigin(), hook.GetAbsOrigin());
-        if (!closest || distance < closest.distance) closest = { cargo, cargoName, hookName, distance };
+function GetCraneIdFromHookEntity(entity) {
+    const entityName = GetEntityName(entity);
+    for (const [craneId, config] of Object.entries(CRANE_CONFIGS)) {
+        if (entityName === config.hookTrigger) return craneId;
     }
-    return closest;
+    return undefined;
 }
 
-function TryHook(craneId, source) {
+function AttachCargoFromHookTouch(craneId, cargoHookName) {
     const config = CRANE_CONFIGS[craneId];
     const state = states.get(craneId);
-    if (state.hookedCargo && state.hookedCargo.IsValid()) return;
+    if (state.hookedCargo && state.hookedCargo.IsValid()) {
+        Instance.Msg(`crane.js: ${craneId} already has hooked cargo ${DescribeEntity(state.hookedCargo)}.`);
+        return;
+    }
+
+    const cargoName = cargoHookName.replace(/_hook$/, "");
+    const cargo = GetNamedEntity(cargoName);
+    const cargoHook = GetNamedEntity(cargoHookName);
     const cargoParentName = config.components.pulleyRotation || config.components.pulley;
     const cargoParent = GetNamedEntity(cargoParentName);
-    const cargo = GetClosestCargo(config);
-    if (!cargoParent || !cargo || cargo.distance > HOOK_DISTANCE) return;
-    cargo.cargo.SetParent(cargoParent);
-    state.hookedCargo = cargo.cargo;
-    Instance.Msg(`crane.js: ${craneId} hooked ${cargo.cargoName} to ${cargoParentName} from ${source}.`);
+    Instance.Msg(`crane.js: hook resolved crane=${craneId}, trigger=${cargoHookName}, cargo=${cargoName}, parent=${cargoParentName}.`);
+    if (!cargo) {
+        Instance.Msg(`crane.js: cannot hook because cargo entity ${cargoName} was not found.`);
+        return;
+    }
+    if (!cargoHook) {
+        Instance.Msg(`crane.js: cannot hook because cargo trigger ${cargoHookName} was not found.`);
+        return;
+    }
+    if (!cargoParent) {
+        Instance.Msg(`crane.js: cannot hook because parent entity ${cargoParentName} was not found.`);
+        return;
+    }
+
+    const currentCargoParent = typeof cargo.GetParent === "function" ? cargo.GetParent() : undefined;
+    if (currentCargoParent !== cargoHook) {
+        Instance.Msg(`crane.js: cannot hook because ${cargoName} is not a child of ${cargoHookName}; current parent=${DescribeEntity(currentCargoParent)}.`);
+        return;
+    }
+
+    Instance.Msg(`crane.js: calling SetParent on ${DescribeEntity(cargoHook)} with ${DescribeEntity(cargoParent)}.`);
+    cargoHook.SetParent(cargoParent);
+
+    const actualParent = typeof cargoHook.GetParent === "function" ? cargoHook.GetParent() : undefined;
+    if (actualParent === cargoParent) {
+        state.hookedCargo = cargoHook;
+        Instance.Msg(`crane.js: parent verified; ${cargoHookName} is now parented to ${cargoParentName}.`);
+    } else {
+        Instance.Msg(`crane.js: SetParent did not verify; ${cargoHookName} parent is ${DescribeEntity(actualParent)}.`);
+    }
 }
 
-function CheckHook(craneId, config, state, now) {
-    if (now < state.nextHookCheck) return;
-    state.nextHookCheck = now + UPDATE_INTERVAL;
-    const cargo = GetClosestCargo(config);
-    if (!cargo) return;
-    if (cargo.distance <= HOOK_DISTANCE) {
-        if (!state.hookRangePrinted) {
-            Instance.Msg(`crane.js: ${craneId} ${cargo.hookName} is within hook range.`);
-            state.hookRangePrinted = true;
-        }
-        TryHook(craneId, "polling");
-    } else state.hookRangePrinted = false;
+function HandleHookTouch(caller, activator) {
+    Instance.Msg(`crane.js: ${HOOK_TOUCH_INPUT} received caller=${DescribeEntity(caller)} activator=${DescribeEntity(activator)}.`);
+    const activatorCraneId = GetCraneIdFromHookEntity(activator);
+    const callerCraneId = GetCraneIdFromHookEntity(caller);
+    const craneId = activatorCraneId || callerCraneId;
+    if (!craneId) {
+        Instance.Msg(`crane.js: hook touch ignored because caller=${DescribeEntity(caller)} and activator=${DescribeEntity(activator)} do not directly match a configured hookTrigger.`);
+        return;
+    }
+
+    const cargoHookEntity = activatorCraneId ? caller : activator;
+    const cargoHookName = GetEntityName(cargoHookEntity);
+    Instance.Msg(`crane.js: hook touch matched ${craneId}; candidate cargo trigger=${DescribeEntity(cargoHookEntity)}.`);
+    if (!CARGO_HOOKS.includes(cargoHookName)) {
+        Instance.Msg(`crane.js: hook touch ignored because ${cargoHookName || "unnamed"} is not listed in CARGO_HOOKS.`);
+        return;
+    }
+    AttachCargoFromHookTouch(craneId, cargoHookName);
 }
 
 function Update() {
@@ -470,11 +501,6 @@ function Update() {
             : Math.min(nextEntityValidationTime, state.validationEndsAt);
     }
 
-    const activeCraneIds = new Set(activeUsers.values());
-    for (const id of activeCraneIds) {
-        CheckHook(id, CRANE_CONFIGS[id], states.get(id), now);
-    }
-
     let nextThinkTime = undefined;
     if (cameras.size > 0) nextThinkTime = now;
     else if (activeUsers.size > 0) nextThinkTime = now + UPDATE_INTERVAL;
@@ -498,6 +524,7 @@ function ApplyRandomCraneStartPosition(craneId, config, state, now) {
     const [minimumHeadDegrees, maximumHeadDegrees] = config.headSpawnDegreeRange;
     const headDegrees = minimumHeadDegrees + Math.random() * (maximumHeadDegrees - minimumHeadDegrees);
 
+    state.hookedCargo = null;
     state.motion = { head: 0, trolley: null, pulley: null, pulleyRotation: 0 };
     state.backoffUntil = 0;
     state.randomizingStart = true;
@@ -662,6 +689,10 @@ for (const [id, config] of Object.entries(CRANE_CONFIGS)) {
     });
     Instance.OnScriptInput(config.collisionInput, ({ caller, activator }) => HandleCollision(id, caller, activator));
 }
+
+Instance.OnScriptInput(HOOK_TOUCH_INPUT, ({ caller, activator }) => {
+    HandleHookTouch(caller, activator);
+});
 
 Instance.OnCustomHudClicked((event) => {
     if (event.layout !== GetLayout()) return;
