@@ -36,6 +36,10 @@
                     <Image class="ButtonIcon MoveIcon InvertIcon RotateRight" src="file://{images}/arrow.png" />
                 </Button>
                 <Panel class="ButtonDivider" />
+                <Button id="crane_camera_switch" class="ControlButton SquareButton IconButton">
+                    <Image class="ButtonIcon MoveIcon" src="file://{images}/switch.png" />
+                </Button>
+                <Panel class="ButtonDivider" />
                 <Button id="crane_stop" class="StopButton"><Label text="STOP" /></Button>
             </Panel>
         </Panel>

@@ -18,8 +18,16 @@ const CRANE_CONFIGS = {
 		headSpawnDegreeRange: [90, 360],
 		cameraEnterTime: 2,
 		cameraExitTime: 1.0,
-		cameraPosition: { x: 717, y: 732, z: 1017 },
-		cameraAngles: { pitch: 38, yaw: -61, roll: 0 },
+		cameraViews: [
+			{
+				position: { x: -300, y: 135, z: 960 },
+				angles: { pitch: 35, yaw: -63, roll: 0 }
+			},
+			{
+				position: { x: -569, y: 377, z: -440 },
+				angles: { pitch: -2, yaw: 60, roll: 0 }
+			}
+		],
 		hookTrigger: "crane_pulley_rotation_secret",
 		components: {
 			head: "crane_head_secret",
@@ -37,8 +45,24 @@ const CRANE_CONFIGS = {
 		headSpawnDegreeRange: [0, 360],
 		cameraEnterTime: 2,
 		cameraExitTime: 1.0,
-		cameraPosition: { x: 574, y: 1190, z: 1700 },
-		cameraAngles: { pitch: 46, yaw: -32, roll: 0 },
+		cameraViews: [
+			{
+				position: { x: 2300, y: -600, z: 720 },
+				angles: { pitch: 9, yaw: 123, roll: 0 }
+			},
+			{
+				position: { x: 1600, y: 1900, z: 1500 },
+				angles: { pitch: 31, yaw: -124, roll: 0 }
+			},
+			{
+				position: { x: -248, y: 2200, z: 850 },
+				angles: { pitch: 15, yaw: -30, roll: 0 }
+			},
+			{
+				position: { x: 1000, y: -113, z: 20 },
+				angles: { pitch: 20, yaw: 130, roll: 0 }
+			}
+		],
 		hookTrigger: "crane_pulley_rotation_normal",
 		components: {
 			head: "crane_head_normal",
@@ -69,7 +93,8 @@ const DYNAMIC_COLLISION = [
 	"cargo_container_1",
 	"crane_pulley_normal_model",
 	"crane_pulley_secret_model",
-	"cargo_surf_collision"
+	"cargo_surf_collision",
+	"crane_pulley_rotation_normal"
 ];
 
 let craneLayout = null;
@@ -191,17 +216,35 @@ function StartCamera(player, craneId, config) {
     const position = pawn.GetEyePosition();
     const angles = pawn.GetEyeAngles();
     const camera = GetCamera(pawn);
+    const initialView = config.cameraViews[0];
     camera.Teleport({ position, angles });
     EnableCamera(camera);
     cameras.set(slot, {
         craneId, camera, mode: "enter",
         startPosition: position, startAngles: angles,
         fromPosition: position, fromAngles: angles,
-        toPosition: config.cameraPosition, toAngles: config.cameraAngles,
+        viewIndex: 0,
+        toPosition: initialView.position, toAngles: initialView.angles,
         duration: config.cameraEnterTime, startedAt: Instance.GetGameTime()
     });
     Instance.SetNextThink(Instance.GetGameTime());
     return true;
+}
+
+function SwitchCameraView(slot, config) {
+    const cameraState = cameras.get(slot);
+    if (!cameraState || cameraState.mode === "exit" || config.cameraViews.length < 2) return;
+
+    cameraState.viewIndex = (cameraState.viewIndex + 1) % config.cameraViews.length;
+    const nextView = config.cameraViews[cameraState.viewIndex];
+    cameraState.mode = "switch";
+    cameraState.fromPosition = cameraState.camera.GetAbsOrigin();
+    cameraState.fromAngles = cameraState.camera.GetAbsAngles();
+    cameraState.toPosition = nextView.position;
+    cameraState.toAngles = nextView.angles;
+    cameraState.duration = config.cameraEnterTime;
+    cameraState.startedAt = Instance.GetGameTime();
+    Instance.SetNextThink(Instance.GetGameTime());
 }
 
 function ExitCamera(slot, config) {
@@ -699,6 +742,7 @@ Instance.OnCustomHudClicked((event) => {
         case "crane_pulley_down": MoveComponent(config, state, "pulley", "Close", "close"); break;
         case "crane_pulley_rotate_ccw": SetPulleyRotationSpeed(config, state, 0.2); break;
         case "crane_pulley_rotate_cw": SetPulleyRotationSpeed(config, state, -0.2); break;
+        case "crane_camera_switch": SwitchCameraView(slot, config); break;
         case "crane_stop": StopAll(config, state); break;
         case "crane_cancel": HideControls(slot); break;
     }
