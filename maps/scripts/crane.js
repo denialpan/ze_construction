@@ -7,6 +7,7 @@ const CAMERA_CONTROLLED = 1;
 const UPDATE_INTERVAL = 0.5;
 const BACKOFF_TIME = 0.15;
 const START_POSITION_VALIDATION_TIME = 0.1;
+const START_POSITION_SPEED_REFRESH_TIME = 0.01;
 const START_POSITION_MOVE_SPEED = 9999;
 const HOOK_TOUCH_INPUT = "CraneHookTouch";
 
@@ -204,6 +205,27 @@ function DisableCamera(camera) {
         camera.SetEnabled(false);
         camera.SetIsControllingAngles(false);
     }
+}
+
+function ResetPlayerControlStates() {
+    const layout = GetLayout();
+    const playerSlots = new Set([...activeUsers.keys(), ...cameras.keys()]);
+    for (const player of Instance.GetAllPlayerControllers()) {
+        if (player && player.IsConnected()) playerSlots.add(player.GetPlayerSlot());
+    }
+
+    if (layout) {
+        for (const slot of playerSlots) {
+            layout.SetHasClassForPlayer(slot, PANEL_ID, "Dismissed", true);
+            layout.SetInputCaptureEnabled(slot, false);
+        }
+    }
+
+    for (const cameraState of cameras.values()) {
+        if (cameraState.camera && cameraState.camera.IsValid()) DisableCamera(cameraState.camera);
+    }
+    cameras.clear();
+    activeUsers.clear();
 }
 
 function StartCamera(player, craneId, config) {
@@ -506,11 +528,14 @@ function Update() {
             RestoreCraneLinearMoveSpeed(CRANE_CONFIGS[craneId]);
             state.randomizingStart = false;
             continue;
+        } else {
+            SetCraneValidationMoveSpeed(CRANE_CONFIGS[craneId]);
         }
 
+        const nextSpeedRefresh = now + START_POSITION_SPEED_REFRESH_TIME;
         nextStartValidationTime = nextStartValidationTime === undefined
-            ? state.startValidationEndsAt
-            : Math.min(nextStartValidationTime, state.startValidationEndsAt);
+            ? Math.min(nextSpeedRefresh, state.startValidationEndsAt)
+            : Math.min(nextStartValidationTime, nextSpeedRefresh, state.startValidationEndsAt);
     }
 
     let nextEntityValidationTime = undefined;
@@ -559,16 +584,7 @@ function ApplyRandomCraneStartPosition(craneId, config, state, now) {
     state.startCollisionDetected = false;
     state.startValidationEndsAt = now + START_POSITION_VALIDATION_TIME;
 
-    Instance.EntFireAtName({
-        name: config.components.trolley,
-        input: "SetSpeed",
-        value: START_POSITION_MOVE_SPEED
-    });
-    Instance.EntFireAtName({
-        name: config.components.pulley,
-        input: "SetSpeed",
-        value: START_POSITION_MOVE_SPEED
-    });
+    SetCraneValidationMoveSpeed(config);
 
     Instance.EntFireAtName({
         name: config.components.head,
@@ -587,6 +603,19 @@ function ApplyRandomCraneStartPosition(craneId, config, state, now) {
         value: Math.random()
     });
 
+}
+
+function SetCraneValidationMoveSpeed(config) {
+    Instance.EntFireAtName({
+        name: config.components.trolley,
+        input: "SetSpeed",
+        value: START_POSITION_MOVE_SPEED
+    });
+    Instance.EntFireAtName({
+        name: config.components.pulley,
+        input: "SetSpeed",
+        value: START_POSITION_MOVE_SPEED
+    });
 }
 
 function RestoreCraneLinearMoveSpeed(config) {
@@ -709,6 +738,45 @@ function RandomizeAllSpawnPositions() {
     RandomizeConfiguredEntitySpawns();
 }
 
+function ResetAllCraneStates() {
+    ResetPlayerControlStates();
+
+    for (const cargoHookName of CARGO_HOOKS) {
+        Instance.EntFireAtName({ name: cargoHookName, input: "ClearParent" });
+    }
+
+    for (const [craneId, config] of Object.entries(CRANE_CONFIGS)) {
+        const state = states.get(craneId);
+        state.hookedCargo = null;
+        state.backoffUntil = 0;
+        state.randomizingStart = false;
+        state.startCollisionDetected = false;
+        state.startValidationEndsAt = 0;
+        state.motion = { head: 0, trolley: null, pulley: null, pulleyRotation: 0 };
+
+        Instance.EntFireAtName({ name: config.components.head, input: "SetSpeed", value: 0 });
+        Instance.EntFireAtName({ name: config.components.trolley, input: "SetSpeed", value: 0 });
+        Instance.EntFireAtName({ name: config.components.pulley, input: "SetSpeed", value: 0 });
+        if (config.components.pulleyRotation) {
+            Instance.EntFireAtName({ name: config.components.pulleyRotation, input: "SetSpeed", value: 0 });
+        }
+        if (config.components.headPush) {
+            Instance.EntFireAtName({ name: config.components.headPush, input: "Disable" });
+        }
+    }
+
+    for (const state of randomSpawnStates.values()) {
+        state.validating = false;
+        state.collisionDetected = false;
+        state.validationEndsAt = 0;
+    }
+}
+
+function ResetAndRandomizeAllSpawnPositions() {
+    ResetAllCraneStates();
+    RandomizeAllSpawnPositions();
+}
+
 for (const [id, config] of Object.entries(CRANE_CONFIGS)) {
     Instance.OnScriptInput(config.showInput, ({ activator, caller }) => {
         const player = GetPlayer(activator) || GetPlayer(caller);
@@ -749,8 +817,8 @@ Instance.OnCustomHudClicked((event) => {
 });
 
 Instance.SetThink(Update);
-Instance.OnActivate(RandomizeAllSpawnPositions);
-Instance.OnRoundStart(RandomizeAllSpawnPositions);
+Instance.OnActivate(ResetAndRandomizeAllSpawnPositions);
+Instance.OnRoundStart(ResetAndRandomizeAllSpawnPositions);
 
 Instance.OnPlayerDisconnect((event) => {
     const id = activeUsers.get(event.playerSlot);
