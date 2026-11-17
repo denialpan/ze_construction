@@ -3,22 +3,22 @@ import { Instance } from "cs_script/point_script";
 const TEXT_UPDATE_INTERVAL = 1 / 100;
 
 const TIMER_CONFIGS = {
-    intro_timer: {
-        duration: 10,
-        textEntity: "text_intro_timer",
-        finishTarget: "relay_start_map",
-        finishInput: "Trigger"
-    },
+	intro_timer: {
+			duration: 10,
+			textEntity: "text_intro_timer",
+			finishTarget: "relay_start_map",
+			finishInput: "Trigger"
+	},
 	
 	floor_1_doors: {
-        duration: 10,
+        duration: 120,
         textEntity: "text_floor_1_doors_timer",
         finishTarget: "relay_open_floor_1_doors",
         finishInput: "Trigger"
     },
 	
 	floor_2_doors: {
-        duration: 10,
+        duration: 125,
         textEntity: "text_floor_2_doors_timer",
         finishTarget: "relay_open_floor_2_doors",
         finishInput: "Trigger"
