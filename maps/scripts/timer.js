@@ -23,6 +23,13 @@ const TIMER_CONFIGS = {
         finishTarget: "relay_open_floor_2_doors",
         finishInput: "Trigger"
     },
+		
+		floor_elevators: {
+        duration: 10,
+        textEntity: "",
+        finishTarget: "relay_open_elevators",
+        finishInput: "Trigger"
+    },
 	
 	ending_kz_restart_round: {
 		duration: 33,

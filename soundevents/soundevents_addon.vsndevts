@@ -510,8 +510,8 @@
         pitch = 1.000000
         vsnd_files_track_01 = "sounds/ending_credits_ffa_start.vsnd"
         restrict_source_reverb = true
-		disable_volume_culling = true
-		position_relative_to_player = true
+				disable_volume_culling = true
+				position_relative_to_player = true
         use_distance_unfiltered_stereo_mapping_curve = true
         distance_unfiltered_stereo_mapping_curve = 
         [
@@ -521,5 +521,21 @@
             ],
         ]
     }
+
+	d3.elevator_ding = 
+	{
+			type = "csgo_mega"
+			volume = 4
+			pitch = 1.000000
+			mixgroup = "Ambient"
+			vsnd_files_track_01 = "sounds/elevator_ding.vsnd"
+			use_distance_unfiltered_stereo_mapping_curve = true
+			use_distance_volume_mapping_curve = true
+			distance_volume_mapping_curve = 
+			[
+					[ 0.0, 1.0, 0.0, 0.0, 2.0, 3.0, ],
+					[384.0, 0.0, 0.0, 0.0, 2.0, 3.0, ]
+			]
+	}
 
 }
