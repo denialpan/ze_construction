@@ -9,8 +9,8 @@
 			m_nOpacityPercent = 100
 			m_bVisible = true
 			m_pLayerMask = null
-			m_nBrightness = -73
-			m_nContrast = 43
+			m_nBrightness = -74
+			m_nContrast = 100
 		},
 		{
 			_class = "CVibranceColorCorrectionLayer"
@@ -19,7 +19,7 @@
 			m_bVisible = true
 			m_pLayerMask = null
 			m_nVibrance = -81
-			m_nSaturation = 0
+			m_nSaturation = -80
 		},
 		{
 			_class = "CVignetteLayer"
