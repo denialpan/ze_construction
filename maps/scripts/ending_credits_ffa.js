@@ -1,13 +1,22 @@
-import { CSDamageFlags, CSDamageTypes, CSGearSlot, Entity, Instance } from "cs_script/point_script";
+import {
+    CSDamageFlags,
+    CSDamageTypes,
+    CSGearSlot,
+    CSWeaponAttackType,
+    Entity,
+    Instance
+} from "cs_script/point_script";
 
 const INPUT_START = "start";
 const CT_TEAM = 3;
 const TARGET_MONEY = 67;
-const GIVE_WEAPON = "weapon_usp_silencer";
 const DEBUG_TRACE_LENGTH = 4096;
+const KNIFE_TRACE_LENGTH = 64;
+const KNIFE_TRACE_RADIUS = 24;
 const DEBUG_TRACE_DURATION = 1.0;
 const DEBUG_TRACE_COLOR = { r: 255, g: 0, b: 0 };
-const USP_TRACE_DAMAGE = 20;
+const KNIFE_TRACE_DAMAGE = 49.5;
+const KNIFE_SECONDARY_TRACE_DAMAGE = 99;
 const DAMAGE_TEST_ENTITY_NAME = "damage_test";
 const DAMAGE_TEST_DAMAGE = 100;
 const HUD_NAME = "hud_ending_credits_ffa";
@@ -38,13 +47,50 @@ const ZONE_PLAYER_COUNT_NAME = "ending_credits_ffa_player_count";
 const ZONE_SUCCESS_RELAY_NAME = "relay_ending_credits_ffa";
 const ZONE_REQUIRED_CT_RATIO = 0.75;
 const ZONE_HOLD_DURATION = 5;
+const RECOMMENDED_WEAPON_DAMAGE = new Map([
+    ["weapon_mp9", 10.1],
+    ["weapon_mac10", 10.1],
+    ["weapon_mp7", 10.1],
+    ["weapon_mp5sd", 10.1],
+    ["weapon_ump45", 12.1],
+    ["weapon_p90", 6.1],
+    ["weapon_bizon", 4.7],
+    ["weapon_m4a1_silencer", 25.0],
+    ["weapon_ak47", 16.7],
+    ["weapon_famas", 20.0],
+    ["weapon_m4a1", 16.7],
+    ["weapon_sg556", 16.7],
+    ["weapon_aug", 16.7],
+    ["weapon_galilar", 14.3],
+    ["weapon_deagle", 21.6],
+    ["weapon_cz75a", 12.6],
+    ["weapon_usp_silencer", 12.6],
+    ["weapon_p250", 11.7],
+    ["weapon_tec9", 8.4],
+    ["weapon_hkp2000", 11.7],
+    ["weapon_glock", 7.6],
+    ["weapon_fiveseven", 7.6],
+    ["weapon_elite", 5.1],
+    ["weapon_revolver", 18.9],
+    ["weapon_awp", 99],
+    ["weapon_ssg08", 80],
+    ["weapon_negev", 2.7],
+    ["weapon_m249", 4.0],
+    ["weapon_g3sg1", 33.4],
+    ["weapon_scar20", 33.4],
+    ["weapon_xm1014", 28.8],
+    ["weapon_mag7", 40.0],
+    ["weapon_sawedoff", 28.8],
+    ["weapon_nova", 25.2]
+]);
 
-const trackedUsps = [];
+const trackedRaytraceWeapons = new Map();
 const zonePlayerSlots = new Set();
 let endingCreditsHud = null;
 let hudCountdownState = null;
 let zoneSuccessTime = null;
 let zoneCompleted = false;
+let applyingRaytraceDamage = false;
 
 function IsAliveCTPawn(pawn) {
     return pawn
@@ -53,44 +99,54 @@ function IsAliveCTPawn(pawn) {
         && pawn.GetTeamNumber() === CT_TEAM;
 }
 
-function RemoveWeaponSlot(pawn, slot) {
-    const weapon = pawn.FindWeaponBySlot(slot);
-    if (weapon && weapon.IsValid()) {
-        pawn.DestroyWeapon(weapon);
-    }
-}
-
 function SetPlayerMoney(player, amount) {
     const currentMoney = player.GetMoneySpendableNow();
     player.AddMoneySpendableNow(amount - currentMoney);
 }
 
-function TrackGivenUsp(pawn) {
-    const weapon = pawn.FindWeaponBySlot(CSGearSlot.PISTOL);
-    if (!weapon || !weapon.IsValid()) {
-        return;
+function RegisterPlayerRaytraceWeapons(pawn) {
+    let registeredWeapons = 0;
+
+    for (const slot of [CSGearSlot.RIFLE, CSGearSlot.PISTOL, CSGearSlot.KNIFE]) {
+        const weapon = pawn.FindWeaponBySlot(slot);
+        if (!weapon || !weapon.IsValid()) {
+            continue;
+        }
+
+        const className = weapon.GetClassName();
+        const damage = slot === CSGearSlot.KNIFE
+            ? KNIFE_TRACE_DAMAGE
+            : RECOMMENDED_WEAPON_DAMAGE.get(className);
+        if (damage === undefined) {
+            Instance.Msg(`ending_credits_ffa.js: no recommended damage configured for ${className}.`);
+            continue;
+        }
+
+        trackedRaytraceWeapons.set(weapon, damage);
+        registeredWeapons++;
+        Instance.Msg(`ending_credits_ffa.js: registered existing ${className} with ${damage} raytrace damage.`);
     }
 
-    trackedUsps.push(weapon);
+    if (registeredWeapons === 0) {
+        Instance.Msg("ending_credits_ffa.js: alive CT has no supported firearm or knife to register.");
+    }
+
+    return registeredWeapons;
 }
 
-function IsTrackedUsp(weapon) {
-    if (!weapon || !weapon.IsValid()) {
+function IsTrackedRaytraceWeapon(weapon) {
+    return weapon && weapon.IsValid() && trackedRaytraceWeapons.has(weapon);
+}
+
+function IsKnifeWeapon(weapon) {
+    if (!weapon || !weapon.IsValid() || typeof weapon.GetData !== "function") {
         return false;
     }
 
-    for (const trackedUsp of trackedUsps) {
-        if (trackedUsp && trackedUsp.IsValid() && trackedUsp === weapon) {
-            return true;
-        }
-    }
-
-    return weapon.GetClassName() === GIVE_WEAPON && IsOwnedByEligiblePlayer(weapon);
-}
-
-function IsOwnedByEligiblePlayer(weapon) {
-    const owner = weapon.GetOwner();
-    return IsAliveCTPawn(owner);
+    const weaponData = weapon.GetData();
+    return weaponData
+        && typeof weaponData.GetGearSlot === "function"
+        && weaponData.GetGearSlot() === CSGearSlot.KNIFE;
 }
 
 function GetForwardVector(angles) {
@@ -554,25 +610,30 @@ function ApplyDamageWithFallback(victim, shooter, weapon, damage) {
         ? CSDamageFlags.IGNORE_ARMOR | CSDamageFlags.FORCE_DEATH
         : CSDamageFlags.IGNORE_ARMOR;
 
-    const result = victim.TakeDamage({
-        damage,
-        damageTypes: CSDamageTypes.BULLET,
-        damageFlags,
-        inflictor: shooter,
-        attacker: shooter,
-        weapon
-    });
+    applyingRaytraceDamage = true;
+    try {
+        const result = victim.TakeDamage({
+            damage,
+            damageTypes: CSDamageTypes.BULLET,
+            damageFlags,
+            inflictor: shooter,
+            attacker: shooter,
+            weapon
+        });
 
-    if (DamagePassed(victim, beforeHealth, result)) {
-        return;
+        if (DamagePassed(victim, beforeHealth, result)) {
+            return;
+        }
+
+        Instance.Msg("ending_credits_ffa.js: attributed damage did not pass, applying neutral fallback damage.");
+        victim.TakeDamage({
+            damage,
+            damageTypes: CSDamageTypes.GENERIC,
+            damageFlags: CSDamageFlags.IGNORE_ARMOR
+        });
+    } finally {
+        applyingRaytraceDamage = false;
     }
-
-    Instance.Msg("ending_credits_ffa.js: attributed damage did not pass, applying neutral fallback damage.");
-    victim.TakeDamage({
-        damage,
-        damageTypes: CSDamageTypes.GENERIC,
-        damageFlags: CSDamageFlags.IGNORE_ARMOR
-    });
 }
 
 function KillRandomCTFromDamageTest(shooter, weapon) {
@@ -585,25 +646,31 @@ function KillRandomCTFromDamageTest(shooter, weapon) {
     ApplyDamageWithFallback(pawn, shooter, weapon, DAMAGE_TEST_DAMAGE);
 }
 
-function ApplyScriptedUspDamage(victim, shooter, weapon) {
-    ApplyDamageWithFallback(victim, shooter, weapon, USP_TRACE_DAMAGE);
-}
-
-function FireScriptedUspTrace(weapon) {
+function FireScriptedWeaponTrace(weapon, damageOverride) {
     const owner = weapon.GetOwner();
     if (!owner || !owner.IsValid()) {
         return;
     }
 
+    const damage = damageOverride ?? trackedRaytraceWeapons.get(weapon);
+    if (damage === undefined) {
+        return;
+    }
+
     const start = owner.GetEyePosition();
     const forward = GetForwardVector(owner.GetEyeAngles());
-    const end = AddVectors(start, ScaleVector(forward, DEBUG_TRACE_LENGTH));
-    const trace = Instance.TraceLine({
+    const isKnife = IsKnifeWeapon(weapon);
+    const traceLength = isKnife ? KNIFE_TRACE_LENGTH : DEBUG_TRACE_LENGTH;
+    const end = AddVectors(start, ScaleVector(forward, traceLength));
+    const traceConfig = {
         start,
         end,
         ignoreEntity: owner,
         traceHitboxes: true
-    });
+    };
+    const trace = isKnife
+        ? Instance.TraceSphere({ ...traceConfig, radius: KNIFE_TRACE_RADIUS })
+        : Instance.TraceLine(traceConfig);
 
     Instance.DebugLine({
         start,
@@ -613,11 +680,14 @@ function FireScriptedUspTrace(weapon) {
     });
 
     if (!trace.didHit) {
-        Instance.Msg("ending_credits_ffa.js: scripted USP trace did not hit anything.");
+        Instance.Msg(`ending_credits_ffa.js: scripted ${weapon.GetClassName()} trace did not hit anything.`);
         return;
     }
 
-    Instance.Msg(`ending_credits_ffa.js: scripted USP trace hit ${DescribeEntity(trace.hitEntity)}.`);
+    Instance.Msg(
+        `ending_credits_ffa.js: scripted ${weapon.GetClassName()} trace hit `
+        + `${DescribeEntity(trace.hitEntity)} for ${damage} damage.`
+    );
 
     if (!trace.hitEntity) {
         return;
@@ -632,11 +702,13 @@ function FireScriptedUspTrace(weapon) {
         return;
     }
 
-    ApplyScriptedUspDamage(trace.hitEntity, owner, weapon);
+    ApplyDamageWithFallback(trace.hitEntity, owner, weapon, damage);
 }
 
 function ApplyEndingCreditsFFA() {
+    trackedRaytraceWeapons.clear();
     let affectedPlayers = 0;
+    let registeredWeapons = 0;
 
     for (const player of Instance.GetAllPlayerControllers()) {
         const pawn = player.GetPlayerPawn();
@@ -644,15 +716,18 @@ function ApplyEndingCreditsFFA() {
             continue;
         }
 
-        RemoveWeaponSlot(pawn, CSGearSlot.RIFLE);
-        RemoveWeaponSlot(pawn, CSGearSlot.PISTOL);
         SetPlayerMoney(player, TARGET_MONEY);
-        pawn.GiveNamedItem(GIVE_WEAPON, true);
-        TrackGivenUsp(pawn);
-        affectedPlayers++;
+        const playerWeaponCount = RegisterPlayerRaytraceWeapons(pawn);
+        if (playerWeaponCount > 0) {
+            affectedPlayers++;
+            registeredWeapons += playerWeaponCount;
+        }
     }
 
-    Instance.Msg(`ending_credits_ffa.js: applied FFA loadout to ${affectedPlayers} alive CT players.`);
+    Instance.Msg(
+        `ending_credits_ffa.js: registered ${registeredWeapons} FFA weapons `
+        + `for ${affectedPlayers} alive CT players.`
+    );
 }
 
 Instance.OnScriptInput(INPUT_START, () => {
@@ -669,6 +744,7 @@ Instance.OnScriptInput(ZONE_REMOVE_PLAYER_INPUT, ({ activator }) => {
 });
 
 function ResetEndingCreditsState() {
+    trackedRaytraceWeapons.clear();
     ResetEndingCreditsHud();
     ResetEndingCreditsZone();
 }
@@ -692,8 +768,27 @@ Instance.OnPlayerKill((event) => {
     RefreshEndingCreditsZone();
 });
 
+Instance.OnModifyPlayerDamage((event) => {
+    if (
+        !applyingRaytraceDamage
+        && event.weapon
+        && IsTrackedRaytraceWeapon(event.weapon)
+    ) {
+        return { abort: true };
+    }
+});
+
 Instance.OnGunFire((event) => {
-    if (IsTrackedUsp(event.weapon)) {
-        FireScriptedUspTrace(event.weapon);
+    if (IsTrackedRaytraceWeapon(event.weapon) && !IsKnifeWeapon(event.weapon)) {
+        FireScriptedWeaponTrace(event.weapon);
+    }
+});
+
+Instance.OnKnifeAttack((event) => {
+    if (IsTrackedRaytraceWeapon(event.weapon) && IsKnifeWeapon(event.weapon)) {
+        const damage = event.attackType === CSWeaponAttackType.SECONDARY
+            ? KNIFE_SECONDARY_TRACE_DAMAGE
+            : KNIFE_TRACE_DAMAGE;
+        FireScriptedWeaponTrace(event.weapon, damage);
     }
 });
