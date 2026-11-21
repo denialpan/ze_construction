@@ -16,7 +16,6 @@ const HUD_COUNTDOWN_LABEL_ID = "ending_credits_ffa_countdown";
 const HUD_COUNTDOWN_DIALOG_VARIABLE = "ending_credits_ffa_time";
 const HUD_UPPER_LABEL_ID = "ending_credits_ffa_upper_text";
 const HUD_UPPER_DIALOG_VARIABLE = "ending_credits_ffa_upper";
-
 const HUD_UPPER_PLACEHOLDER = "Match begins in:";
 const HUD_ODOMETER_LABEL_ID = "ending_credits_ffa_odometer_text";
 const HUD_ODOMETER_DIALOG_VARIABLE = "ending_credits_ffa_odometer";
@@ -33,10 +32,19 @@ const HUD_SEQUENCE_DURATION = HUD_ODOMETER_START_DELAY + HUD_ODOMETER_DURATION;
 const HUD_UPDATE_INTERVAL = 1 / 100;
 const HUD_ODOMETER_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 const HUD_ODOMETER_HIDDEN_CHARACTER = "\u00a0";
+const ZONE_ADD_PLAYER_INPUT = "endings_credits_zone_add_player";
+const ZONE_REMOVE_PLAYER_INPUT = "endings_credits_zone_remove_player";
+const ZONE_PLAYER_COUNT_NAME = "ending_credits_ffa_player_count";
+const ZONE_SUCCESS_RELAY_NAME = "relay_ending_credits_ffa";
+const ZONE_REQUIRED_CT_RATIO = 0.75;
+const ZONE_HOLD_DURATION = 5;
 
 const trackedUsps = [];
+const zonePlayerSlots = new Set();
 let endingCreditsHud = null;
 let hudCountdownState = null;
+let zoneSuccessTime = null;
+let zoneCompleted = false;
 
 function IsAliveCTPawn(pawn) {
     return pawn
@@ -145,6 +153,166 @@ function GetAliveCTPawns() {
     }
 
     return pawns;
+}
+
+function GetPlayerController(entity) {
+    if (!entity) {
+        return undefined;
+    }
+
+    if (typeof entity.GetPlayerSlot === "function") {
+        return entity;
+    }
+
+    if (typeof entity.GetPlayerController === "function") {
+        return entity.GetPlayerController();
+    }
+
+    if (typeof entity.GetOriginalPlayerController === "function") {
+        return entity.GetOriginalPlayerController();
+    }
+
+    return undefined;
+}
+
+function GetAliveCTPlayerSlots() {
+    const playerSlots = new Set();
+
+    for (const player of Instance.GetAllPlayerControllers()) {
+        if (!player || !player.IsConnected()) {
+            continue;
+        }
+
+        if (IsAliveCTPawn(player.GetPlayerPawn())) {
+            playerSlots.add(player.GetPlayerSlot());
+        }
+    }
+
+    return playerSlots;
+}
+
+function SetZoneRemainingPlayerCount(remainingPlayers) {
+    Instance.EntFireAtName({
+        name: ZONE_PLAYER_COUNT_NAME,
+        input: "SetMessage",
+        value: String(remainingPlayers)
+    });
+}
+
+function GetZoneStatus() {
+    const aliveCTPlayerSlots = GetAliveCTPlayerSlots();
+    let aliveCTsInZone = 0;
+
+    for (const playerSlot of zonePlayerSlots) {
+        if (aliveCTPlayerSlots.has(playerSlot)) {
+            aliveCTsInZone++;
+        }
+    }
+
+    const aliveCTCount = aliveCTPlayerSlots.size;
+    const requiredCTCount = Math.ceil(aliveCTCount * ZONE_REQUIRED_CT_RATIO);
+
+    return {
+        aliveCTCount,
+        aliveCTsInZone,
+        requiredCTCount,
+        remainingCTCount: Math.max(0, requiredCTCount - aliveCTsInZone),
+        requirementMet: aliveCTCount > 0 && aliveCTsInZone >= requiredCTCount
+    };
+}
+
+function ScheduleEndingCreditsThink() {
+    const now = Instance.GetGameTime();
+    let nextThinkTime = null;
+
+    if (hudCountdownState) {
+        nextThinkTime = Math.min(hudCountdownState.nextUpdate, hudCountdownState.endTime);
+    }
+
+    if (zoneSuccessTime !== null && !zoneCompleted) {
+        nextThinkTime = nextThinkTime === null
+            ? zoneSuccessTime
+            : Math.min(nextThinkTime, zoneSuccessTime);
+    }
+
+    if (nextThinkTime !== null) {
+        Instance.SetNextThink(Math.max(now, nextThinkTime));
+    }
+}
+
+function RefreshEndingCreditsZone() {
+    const status = GetZoneStatus();
+    SetZoneRemainingPlayerCount(status.remainingCTCount);
+
+    if (zoneCompleted) {
+        return status;
+    }
+
+    if (!status.requirementMet) {
+        zoneSuccessTime = null;
+        return status;
+    }
+
+    if (zoneSuccessTime === null) {
+        zoneSuccessTime = Instance.GetGameTime() + ZONE_HOLD_DURATION;
+    }
+
+    ScheduleEndingCreditsThink();
+    return status;
+}
+
+function SetEndingCreditsZonePlayer(activator, isInside) {
+    const player = GetPlayerController(activator);
+    if (!player || !player.IsConnected()) {
+        return;
+    }
+
+    const playerSlot = player.GetPlayerSlot();
+    const wasInside = zonePlayerSlots.has(playerSlot);
+    if (isInside) {
+        if (!IsAliveCTPawn(player.GetPlayerPawn())) {
+            return;
+        }
+
+        zonePlayerSlots.add(playerSlot);
+    } else {
+        zonePlayerSlots.delete(playerSlot);
+    }
+
+    const membershipChanged = wasInside !== zonePlayerSlots.has(playerSlot);
+    const status = RefreshEndingCreditsZone();
+    if (membershipChanged) {
+        Instance.Msg(
+            `ending_credits_ffa.js: CT player ${playerSlot} ${isInside ? "entered" : "left"} ending credits zone; `
+            + `${status.aliveCTsInZone}/${status.requiredCTCount} required CTs inside `
+            + `(${status.aliveCTCount} alive CTs total).`
+        );
+    }
+}
+
+function CompleteEndingCreditsZoneIfReady() {
+    if (zoneCompleted || zoneSuccessTime === null || Instance.GetGameTime() < zoneSuccessTime) {
+        return;
+    }
+
+    const status = GetZoneStatus();
+    SetZoneRemainingPlayerCount(status.remainingCTCount);
+
+    if (!status.requirementMet) {
+        zoneSuccessTime = null;
+        return;
+    }
+
+    zoneCompleted = true;
+    zoneSuccessTime = null;
+    Instance.EntFireAtName({ name: ZONE_SUCCESS_RELAY_NAME, input: "Trigger" });
+}
+
+function ResetEndingCreditsZone() {
+    zonePlayerSlots.clear();
+    zoneSuccessTime = null;
+    zoneCompleted = false;
+    SetZoneRemainingPlayerCount(GetZoneStatus().remainingCTCount);
 }
 
 function GetEndingCreditsHud() {
@@ -349,29 +517,27 @@ function StartEndingCreditsCountdown() {
     };
 
     UpdateEndingCreditsHud(0, hudCountdownState.dissolveOrder);
-    Instance.SetNextThink(now);
+    ScheduleEndingCreditsThink();
 }
 
 function EndingCreditsHudThink() {
-    if (!hudCountdownState) {
-        return;
-    }
-
     const now = Instance.GetGameTime();
-    const remaining = Math.max(0, hudCountdownState.endTime - now);
-    const elapsed = Math.min(HUD_SEQUENCE_DURATION, now - hudCountdownState.startTime);
+    if (hudCountdownState) {
+        const remaining = Math.max(0, hudCountdownState.endTime - now);
+        const elapsed = Math.min(HUD_SEQUENCE_DURATION, now - hudCountdownState.startTime);
 
-    if (now >= hudCountdownState.nextUpdate) {
-        UpdateEndingCreditsHud(elapsed, hudCountdownState.dissolveOrder);
-        hudCountdownState.nextUpdate = now + HUD_UPDATE_INTERVAL;
+        if (now >= hudCountdownState.nextUpdate) {
+            UpdateEndingCreditsHud(elapsed, hudCountdownState.dissolveOrder);
+            hudCountdownState.nextUpdate = now + HUD_UPDATE_INTERVAL;
+        }
+
+        if (remaining <= 0) {
+            ResetEndingCreditsHud();
+        }
     }
 
-    if (remaining <= 0) {
-        ResetEndingCreditsHud();
-        return;
-    }
-
-    Instance.SetNextThink(Math.min(hudCountdownState.nextUpdate, hudCountdownState.endTime));
+    CompleteEndingCreditsZoneIfReady();
+    ScheduleEndingCreditsThink();
 }
 
 function DamagePassed(victim, beforeHealth, result) {
@@ -494,10 +660,37 @@ Instance.OnScriptInput(INPUT_START, () => {
     StartEndingCreditsCountdown();
 });
 
-Instance.OnActivate(ResetEndingCreditsHud);
-Instance.OnBeginRoundRestart(ResetEndingCreditsHud);
-Instance.OnRoundStart(ResetEndingCreditsHud);
+Instance.OnScriptInput(ZONE_ADD_PLAYER_INPUT, ({ activator }) => {
+    SetEndingCreditsZonePlayer(activator, true);
+});
+
+Instance.OnScriptInput(ZONE_REMOVE_PLAYER_INPUT, ({ activator }) => {
+    SetEndingCreditsZonePlayer(activator, false);
+});
+
+function ResetEndingCreditsState() {
+    ResetEndingCreditsHud();
+    ResetEndingCreditsZone();
+}
+
+Instance.OnActivate(ResetEndingCreditsState);
+Instance.OnBeginRoundRestart(ResetEndingCreditsState);
+Instance.OnRoundStart(ResetEndingCreditsState);
 Instance.SetThink(EndingCreditsHudThink);
+
+Instance.OnPlayerDisconnect((event) => {
+    zonePlayerSlots.delete(event.playerSlot);
+    RefreshEndingCreditsZone();
+});
+
+Instance.OnPlayerKill((event) => {
+    const player = GetPlayerController(event.player);
+    if (player) {
+        zonePlayerSlots.delete(player.GetPlayerSlot());
+    }
+
+    RefreshEndingCreditsZone();
+});
 
 Instance.OnGunFire((event) => {
     if (IsTrackedUsp(event.weapon)) {
