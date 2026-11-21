@@ -1,541 +1,560 @@
 <!-- kv3 encoding:text:version{e21c7f3c-8a33-41c5-9977-a76d3a32aa0d} format:generic:version{7412167c-06e9-4698-aff2-e63eb59037e7} -->
 {
 
-    d3.speed_again = 
-    {
-        type = "csgo_mega"
-        volume = 2
-        pitch = 1.000000
-		vsnd_files_track_01 = "sounds/speed_again.vsnd"
-		restrict_source_reverb = true
-		disable_volume_culling = true
-		position_relative_to_player = true
-        use_distance_unfiltered_stereo_mapping_curve = true
-        distance_unfiltered_stereo_mapping_curve = 
-        [
-            [
-                0, 1, 0, 0,
-                0, 0,
-            ],
-        ]
-    }
-	
-    d3.keypad_correct = 
-    {
-        type = "csgo_mega"
-        volume = 3
-        pitch = 1.000000
-        mixgroup = "Ambient"
-        vsnd_files_track_01 = "sounds/keypad_correct.vsnd"
-        distance_volume_mapping_curve = 
-        [
-            
-            [
-                0.000000,
-                1.000000,
-                0.000000,
-                0.000000,
-                2.000000,
-                3.000000,
-            ],
-            
-            [
-                4096.000000,
-                0.000000,
-                0.000000,
-                0.000000,
-                2.000000,
-                3.000000,
-            ],
-        ]
-    }
-	
-	d3.keypad_incorrect = 
-    {
-        type = "csgo_mega"
-        volume = 3
-        pitch = 1.000000
-        mixgroup = "Ambient"
-        vsnd_files_track_01 = "sounds/keypad_incorrect.vsnd"
-        distance_volume_mapping_curve = 
-        [
-            
-            [
-                0.000000,
-                1.000000,
-                0.000000,
-                0.000000,
-                2.000000,
-                3.000000,
-            ],
-            
-            [
-                4096.000000,
-                0.000000,
-                0.000000,
-                0.000000,
-                2.000000,
-                3.000000,
-            ],
-        ]
-    }
-	
-	d3.keypad_button_press = 
-    {
-        type = "csgo_mega"
-        volume = 3
-        pitch = 1.000000
-        mixgroup = "Ambient"
-        vsnd_files_track_01 = "sounds/keypad_button_press.vsnd"
-        distance_volume_mapping_curve = 
-        [
-            
-            [
-                0.000000,
-                1.000000,
-                0.000000,
-                0.000000,
-                2.000000,
-                3.000000,
-            ],
-            
-            [
-                4096.000000,
-                0.000000,
-                0.000000,
-                0.000000,
-                2.000000,
-                3.000000,
-            ],
-        ]
-    }
-	
-	d3.gate_switch = 
-    {
-        type = "csgo_mega"
-        volume = 4
-        pitch = 1.000000
-        mixgroup = "Ambient"
-        vsnd_files_track_01 = "sounds/gate_switch.vsnd"
-        distance_volume_mapping_curve = 
-        [
-            
-            [
-                0.000000,
-                1.000000,
-                0.000000,
-                0.000000,
-                2.000000,
-                3.000000,
-            ],
-            
-            [
-                4096.000000,
-                0.000000,
-                0.000000,
-                0.000000,
-                2.000000,
-                3.000000,
-            ],
-        ]
-    }
-	
-	d3.gate_open = 
-    {
-        type = "csgo_mega"
-        volume = 4
-        pitch = 1.000000
-        mixgroup = "Ambient"
-        vsnd_files_track_01 = "sounds/gate_open.vsnd"
-        distance_volume_mapping_curve = 
-        [
-            
-            [
-                0.000000,
-                1.000000,
-                0.000000,
-                0.000000,
-                2.000000,
-                3.000000,
-            ],
-            
-            [
-                4096.000000,
-                0.000000,
-                0.000000,
-                0.000000,
-                2.000000,
-                3.000000,
-            ],
-        ]
-    }
+  d3.speed_again =
+  {
+    type = "csgo_mega"
+    volume = 2
+    pitch = 1.000000
+    vsnd_files_track_01 = "sounds/speed_again.vsnd"
+    restrict_source_reverb = true
+    disable_volume_culling = true
+    position_relative_to_player = true
+    use_distance_unfiltered_stereo_mapping_curve = true
+    distance_unfiltered_stereo_mapping_curve =
+    [
+      [
+        0, 1, 0, 0,
+        0, 0,
+      ],
+    ]
+  }
 
-	d3.troll = 
-    {
-        type = "csgo_mega"
-        volume = 4
-        pitch = 1.000000
-        mixgroup = "Ambient"
-        vsnd_files_track_01 = "sounds/troll.vsnd"
-        distance_volume_mapping_curve = 
-        [
-            
-            [
-                0.000000,
-                1.000000,
-                0.000000,
-                0.000000,
-                2.000000,
-                3.000000,
-            ],
-            
-            [
-                4096.000000,
-                0.000000,
-                0.000000,
-                0.000000,
-                2.000000,
-                3.000000,
-            ],
-        ]
-    }
-	
-	d3.irish_spring_green = 
-    {
-        type = "csgo_mega"
-        volume = 4
-        pitch = 1.000000
-        mixgroup = "Ambient"
-        vsnd_files_track_01 = "sounds/irish_spring_green.vsnd"
-        distance_volume_mapping_curve = 
-        [
-            
-            [
-                0.000000,
-                1.000000,
-                0.000000,
-                0.000000,
-                2.000000,
-                3.000000,
-            ],
-            
-            [
-                4096.000000,
-                0.000000,
-                0.000000,
-                0.000000,
-                2.000000,
-                3.000000,
-            ],
-        ]
-    }
-	
-	d3.flight_dolphin = 
-    {
-        type = "csgo_mega"
-        volume = 4
-        pitch = 1.000000
-        vsnd_files_track_01 = "sounds/flight_dolphin.vsnd"
-        restrict_source_reverb = true
-		disable_volume_culling = true
-		position_relative_to_player = true
-        use_distance_unfiltered_stereo_mapping_curve = true
-        distance_unfiltered_stereo_mapping_curve = 
-        [
-            [
-                0, 1, 0, 0,
-                0, 0,
-            ],
-        ]
-    }
-	
-	d3.kz_perfect = 
-    {
-        type = "csgo_mega"
-        volume = 4
-        pitch = 1.000000
-        vsnd_files_track_01 = "sounds/kz_perfect.vsnd"
-        restrict_source_reverb = true
-		disable_volume_culling = true
-		position_relative_to_player = true
-        use_distance_unfiltered_stereo_mapping_curve = true
-        distance_unfiltered_stereo_mapping_curve = 
-        [
-            [
-                0, 1, 0, 0,
-                0, 0,
-            ],
-        ]
-    }
-	
-	d3.kz_impressive = 
-    {
-        type = "csgo_mega"
-        volume = 4
-        pitch = 1.000000
-        vsnd_files_track_01 = "sounds/kz_impressive.vsnd"
-        restrict_source_reverb = true
-		disable_volume_culling = true
-		position_relative_to_player = true
-        use_distance_unfiltered_stereo_mapping_curve = true
-        distance_unfiltered_stereo_mapping_curve = 
-        [
-            [
-                0, 1, 0, 0,
-                0, 0,
-            ],
-        ]
-    }
-	
-	d3.kz_rampage = 
-    {
-        type = "csgo_mega"
-        volume = 4
-        pitch = 1.000000
-        vsnd_files_track_01 = "sounds/kz_rampage.vsnd"
-        restrict_source_reverb = true
-		disable_volume_culling = true
-		position_relative_to_player = true
-        use_distance_unfiltered_stereo_mapping_curve = true
-        distance_unfiltered_stereo_mapping_curve = 
-        [
-            [
-                0, 1, 0, 0,
-                0, 0,
-            ],
-        ]
-    }
-	
-	d3.kz_dominating = 
-    {
-        type = "csgo_mega"
-        volume = 4
-        pitch = 1.000000
-        vsnd_files_track_01 = "sounds/kz_dominating.vsnd"
-        restrict_source_reverb = true
-		disable_volume_culling = true
-		position_relative_to_player = true
-        use_distance_unfiltered_stereo_mapping_curve = true
-        distance_unfiltered_stereo_mapping_curve = 
-        [
-            [
-                0, 1, 0, 0,
-                0, 0,
-            ],
-        ]
-    }
-	
-	d3.kz_unstoppable = 
-    {
-        type = "csgo_mega"
-        volume = 4
-        pitch = 1.000000
-        vsnd_files_track_01 = "sounds/kz_unstoppable.vsnd"
-        restrict_source_reverb = true
-		disable_volume_culling = true
-		position_relative_to_player = true
-        use_distance_unfiltered_stereo_mapping_curve = true
-        distance_unfiltered_stereo_mapping_curve = 
-        [
-            [
-                0, 1, 0, 0,
-                0, 0,
-            ],
-        ]
-    }
-	
-	d3.kz_godlike = 
-    {
-        type = "csgo_mega"
-        volume = 4
-        pitch = 1.000000
-        vsnd_files_track_01 = "sounds/kz_godlike.vsnd"
-        restrict_source_reverb = true
-		disable_volume_culling = true
-		position_relative_to_player = true
-        use_distance_unfiltered_stereo_mapping_curve = true
-        distance_unfiltered_stereo_mapping_curve = 
-        [
-            [
-                0, 1, 0, 0,
-                0, 0,
-            ],
-        ]
-    }
-	
-	d3.kz_holy = 
-    {
-        type = "csgo_mega"
-        volume = 4
-        pitch = 1.000000
-        vsnd_files_track_01 = "sounds/kz_holy.vsnd"
-        restrict_source_reverb = true
-		disable_volume_culling = true
-		position_relative_to_player = true
-        use_distance_unfiltered_stereo_mapping_curve = true
-        distance_unfiltered_stereo_mapping_curve = 
-        [
-            [
-                0, 1, 0, 0,
-                0, 0,
-            ],
-        ]
-    }
-	
-	d3.kz_success = 
-    {
-        type = "csgo_mega"
-        volume = 4
-        pitch = 1.000000
-        mixgroup = "Ambient"
-        vsnd_files_track_01 = "sounds/kz_success.vsnd"
-		use_distance_unfiltered_stereo_mapping_curve = true
-		use_distance_volume_mapping_curve = true
-		distance_volume_mapping_curve = 
-        [
-            [ 0.0, 1.0, 0.0, 0.0, 2.0, 3.0, ],
-            [384.0, 0.0, 0.0, 0.0, 2.0, 3.0, ]
-        ]
-    }
-	
-	d3.keypad_ending_cooked_ding = 
-    {
-        type = "csgo_mega"
-        volume = 4
-        pitch = 1.000000
-        mixgroup = "Ambient"
-		vsnd_files_track_01 = "sounds/keypad_ending_cooked_ding.vsnd"
-		use_distance_unfiltered_stereo_mapping_curve = true
-		use_distance_volume_mapping_curve = true
-		distance_volume_mapping_curve = 
-        [
-            [ 0.0, 1.0, 0.0, 0.0, 2.0, 3.0, ],
-            [512.0, 0.0, 0.0, 0.0, 2.0, 3.0, ]
-        ]
-    }
-	
-	d3.keypad_ending_cooking = 
-    {
-        type = "csgo_mega"
-        volume = 4
-        pitch = 1.000000
-        mixgroup = "Ambient"
-		vsnd_files_track_01 = "sounds/keypad_ending_cooking.vsnd"
-		use_distance_unfiltered_stereo_mapping_curve = true
-		use_distance_volume_mapping_curve = true
-		distance_volume_mapping_curve = 
-        [
-            [ 0.0, 1.0, 0.0, 0.0, 2.0, 3.0, ],
-            [512.0, 0.0, 0.0, 0.0, 2.0, 3.0, ]
-        ]
-    }
+  d3.keypad_correct =
+  {
+    type = "csgo_mega"
+    volume = 3
+    pitch = 1.000000
+    mixgroup = "Ambient"
+    vsnd_files_track_01 = "sounds/keypad_correct.vsnd"
+    distance_volume_mapping_curve =
+    [
 
-	d3.kz_40_success_rise = 
-    {
-        type = "csgo_mega"
-        volume = 4
-        pitch = 1.000000
-        vsnd_files_track_01 = "sounds/kz_40_success_rise.vsnd"
-        restrict_source_reverb = true
-		disable_volume_culling = true
-		position_relative_to_player = true
-        use_distance_unfiltered_stereo_mapping_curve = true
-        distance_unfiltered_stereo_mapping_curve = 
-        [
-            [
-                0, 1, 0, 0,
-                0, 0,
-            ],
-        ]
-    }
-	
-	d3.kz_kill_awp_sound = 
-    {
-        type = "csgo_mega"
-        volume = 8
-        pitch = 1.000000
-        mixgroup = "Ambient"
-        vsnd_files_track_01 = "sounds/kz_kill_awp_sound.vsnd"
-		use_distance_unfiltered_stereo_mapping_curve = true
-		use_distance_volume_mapping_curve = true
-		distance_volume_mapping_curve = 
-        [
-            [ 0.0, 1.0, 0.0, 0.0, 2.0, 3.0, ],
-            [99999.0, 0.0, 0.0, 0.0, 2.0, 3.0, ]
-        ]
-    }
-	
-	d3.kz_50_success_ambience = 
-    {
-        type = "csgo_mega"
-        volume = 4
-        pitch = 1.000000
-        vsnd_files_track_01 = "sounds/kz_50_success_ambience.vsnd"
-        restrict_source_reverb = true
-		disable_volume_culling = true
-		position_relative_to_player = true
-        use_distance_unfiltered_stereo_mapping_curve = true
-        distance_unfiltered_stereo_mapping_curve = 
-        [
-            [
-                0, 1, 0, 0,
-                0, 0,
-            ],
-        ]
-    }
-	
-	d3.ending_credits_ffa_warmup = 
-    {
-        type = "csgo_mega"
-        volume = 1
-        pitch = 1.000000
-        vsnd_files_track_01 = "sounds/ending_credits_ffa_warmup.vsnd"
-        restrict_source_reverb = true
-		disable_volume_culling = true
-		position_relative_to_player = true
-        use_distance_unfiltered_stereo_mapping_curve = true
-        distance_unfiltered_stereo_mapping_curve = 
-        [
-            [
-                0, 1, 0, 0,
-                0, 0,
-            ],
-        ]
-    }
-	
-	d3.ending_credits_ffa_start = 
-    {
-        type = "csgo_mega"
-        volume = 1
-        pitch = 1.000000
-        vsnd_files_track_01 = "sounds/ending_credits_ffa_start.vsnd"
-        restrict_source_reverb = true
-				disable_volume_culling = true
-				position_relative_to_player = true
-        use_distance_unfiltered_stereo_mapping_curve = true
-        distance_unfiltered_stereo_mapping_curve = 
-        [
-            [
-                0, 1, 0, 0,
-                0, 0,
-            ],
-        ]
-    }
+      [
+        0.000000,
+        1.000000,
+        0.000000,
+        0.000000,
+        2.000000,
+        3.000000,
+      ],
 
-	d3.elevator_ding = 
-	{
-			type = "csgo_mega"
-			volume = 4
-			pitch = 1.000000
-			mixgroup = "Ambient"
-			vsnd_files_track_01 = "sounds/elevator_ding.vsnd"
-			use_distance_unfiltered_stereo_mapping_curve = true
-			use_distance_volume_mapping_curve = true
-			distance_volume_mapping_curve = 
-			[
-					[ 0.0, 1.0, 0.0, 0.0, 2.0, 3.0, ],
-					[384.0, 0.0, 0.0, 0.0, 2.0, 3.0, ]
-			]
-	}
+      [
+        4096.000000,
+        0.000000,
+        0.000000,
+        0.000000,
+        2.000000,
+        3.000000,
+      ],
+    ]
+  }
+
+  d3.keypad_incorrect =
+  {
+    type = "csgo_mega"
+    volume = 3
+    pitch = 1.000000
+    mixgroup = "Ambient"
+    vsnd_files_track_01 = "sounds/keypad_incorrect.vsnd"
+    distance_volume_mapping_curve =
+    [
+
+      [
+        0.000000,
+        1.000000,
+        0.000000,
+        0.000000,
+        2.000000,
+        3.000000,
+      ],
+
+      [
+        4096.000000,
+        0.000000,
+        0.000000,
+        0.000000,
+        2.000000,
+        3.000000,
+      ],
+    ]
+  }
+
+  d3.keypad_button_press =
+  {
+    type = "csgo_mega"
+    volume = 3
+    pitch = 1.000000
+    mixgroup = "Ambient"
+    vsnd_files_track_01 = "sounds/keypad_button_press.vsnd"
+    distance_volume_mapping_curve =
+    [
+
+      [
+        0.000000,
+        1.000000,
+        0.000000,
+        0.000000,
+        2.000000,
+        3.000000,
+      ],
+
+      [
+        4096.000000,
+        0.000000,
+        0.000000,
+        0.000000,
+        2.000000,
+        3.000000,
+      ],
+    ]
+  }
+
+  d3.gate_switch =
+  {
+    type = "csgo_mega"
+    volume = 4
+    pitch = 1.000000
+    mixgroup = "Ambient"
+    vsnd_files_track_01 = "sounds/gate_switch.vsnd"
+    distance_volume_mapping_curve =
+    [
+
+      [
+        0.000000,
+        1.000000,
+        0.000000,
+        0.000000,
+        2.000000,
+        3.000000,
+      ],
+
+      [
+        4096.000000,
+        0.000000,
+        0.000000,
+        0.000000,
+        2.000000,
+        3.000000,
+      ],
+    ]
+  }
+
+  d3.gate_open =
+  {
+    type = "csgo_mega"
+    volume = 4
+    pitch = 1.000000
+    mixgroup = "Ambient"
+    vsnd_files_track_01 = "sounds/gate_open.vsnd"
+    distance_volume_mapping_curve =
+    [
+
+      [
+        0.000000,
+        1.000000,
+        0.000000,
+        0.000000,
+        2.000000,
+        3.000000,
+      ],
+
+      [
+        4096.000000,
+        0.000000,
+        0.000000,
+        0.000000,
+        2.000000,
+        3.000000,
+      ],
+    ]
+  }
+
+  d3.troll =
+  {
+    type = "csgo_mega"
+    volume = 4
+    pitch = 1.000000
+    mixgroup = "Ambient"
+    vsnd_files_track_01 = "sounds/troll.vsnd"
+    distance_volume_mapping_curve =
+    [
+
+      [
+        0.000000,
+        1.000000,
+        0.000000,
+        0.000000,
+        2.000000,
+        3.000000,
+      ],
+
+      [
+        4096.000000,
+        0.000000,
+        0.000000,
+        0.000000,
+        2.000000,
+        3.000000,
+      ],
+    ]
+  }
+
+  d3.irish_spring_green =
+  {
+    type = "csgo_mega"
+    volume = 4
+    pitch = 1.000000
+    mixgroup = "Ambient"
+    vsnd_files_track_01 = "sounds/irish_spring_green.vsnd"
+    distance_volume_mapping_curve =
+    [
+
+      [
+        0.000000,
+        1.000000,
+        0.000000,
+        0.000000,
+        2.000000,
+        3.000000,
+      ],
+
+      [
+        4096.000000,
+        0.000000,
+        0.000000,
+        0.000000,
+        2.000000,
+        3.000000,
+      ],
+    ]
+  }
+
+  d3.flight_dolphin =
+  {
+    type = "csgo_mega"
+    volume = 4
+    pitch = 1.000000
+    vsnd_files_track_01 = "sounds/flight_dolphin.vsnd"
+    restrict_source_reverb = true
+    disable_volume_culling = true
+    position_relative_to_player = true
+    use_distance_unfiltered_stereo_mapping_curve = true
+    distance_unfiltered_stereo_mapping_curve =
+    [
+      [
+        0, 1, 0, 0,
+        0, 0,
+      ],
+    ]
+  }
+
+  d3.kz_perfect =
+  {
+    type = "csgo_mega"
+    volume = 4
+    pitch = 1.000000
+    vsnd_files_track_01 = "sounds/kz_perfect.vsnd"
+    restrict_source_reverb = true
+    disable_volume_culling = true
+    position_relative_to_player = true
+    use_distance_unfiltered_stereo_mapping_curve = true
+    distance_unfiltered_stereo_mapping_curve =
+    [
+      [
+        0, 1, 0, 0,
+        0, 0,
+      ],
+    ]
+  }
+
+  d3.kz_impressive =
+  {
+    type = "csgo_mega"
+    volume = 4
+    pitch = 1.000000
+    vsnd_files_track_01 = "sounds/kz_impressive.vsnd"
+    restrict_source_reverb = true
+    disable_volume_culling = true
+    position_relative_to_player = true
+    use_distance_unfiltered_stereo_mapping_curve = true
+    distance_unfiltered_stereo_mapping_curve =
+    [
+      [
+        0, 1, 0, 0,
+        0, 0,
+      ],
+    ]
+  }
+
+  d3.kz_rampage =
+  {
+    type = "csgo_mega"
+    volume = 4
+    pitch = 1.000000
+    vsnd_files_track_01 = "sounds/kz_rampage.vsnd"
+    restrict_source_reverb = true
+    disable_volume_culling = true
+    position_relative_to_player = true
+    use_distance_unfiltered_stereo_mapping_curve = true
+    distance_unfiltered_stereo_mapping_curve =
+    [
+      [
+        0, 1, 0, 0,
+        0, 0,
+      ],
+    ]
+  }
+
+  d3.kz_dominating =
+  {
+    type = "csgo_mega"
+    volume = 4
+    pitch = 1.000000
+    vsnd_files_track_01 = "sounds/kz_dominating.vsnd"
+    restrict_source_reverb = true
+    disable_volume_culling = true
+    position_relative_to_player = true
+    use_distance_unfiltered_stereo_mapping_curve = true
+    distance_unfiltered_stereo_mapping_curve =
+    [
+      [
+        0, 1, 0, 0,
+        0, 0,
+      ],
+    ]
+  }
+
+  d3.kz_unstoppable =
+  {
+    type = "csgo_mega"
+    volume = 4
+    pitch = 1.000000
+    vsnd_files_track_01 = "sounds/kz_unstoppable.vsnd"
+    restrict_source_reverb = true
+    disable_volume_culling = true
+    position_relative_to_player = true
+    use_distance_unfiltered_stereo_mapping_curve = true
+    distance_unfiltered_stereo_mapping_curve =
+    [
+      [
+        0, 1, 0, 0,
+        0, 0,
+      ],
+    ]
+  }
+
+  d3.kz_godlike =
+  {
+    type = "csgo_mega"
+    volume = 4
+    pitch = 1.000000
+    vsnd_files_track_01 = "sounds/kz_godlike.vsnd"
+    restrict_source_reverb = true
+    disable_volume_culling = true
+    position_relative_to_player = true
+    use_distance_unfiltered_stereo_mapping_curve = true
+    distance_unfiltered_stereo_mapping_curve =
+    [
+      [
+        0, 1, 0, 0,
+        0, 0,
+      ],
+    ]
+  }
+
+  d3.kz_holy =
+  {
+    type = "csgo_mega"
+    volume = 4
+    pitch = 1.000000
+    vsnd_files_track_01 = "sounds/kz_holy.vsnd"
+    restrict_source_reverb = true
+    disable_volume_culling = true
+    position_relative_to_player = true
+    use_distance_unfiltered_stereo_mapping_curve = true
+    distance_unfiltered_stereo_mapping_curve =
+    [
+      [
+        0, 1, 0, 0,
+        0, 0,
+      ],
+    ]
+  }
+
+  d3.kz_success =
+  {
+    type = "csgo_mega"
+    volume = 4
+    pitch = 1.000000
+    mixgroup = "Ambient"
+    vsnd_files_track_01 = "sounds/kz_success.vsnd"
+    use_distance_unfiltered_stereo_mapping_curve = true
+    use_distance_volume_mapping_curve = true
+    distance_volume_mapping_curve =
+    [
+      [ 0.0, 1.0, 0.0, 0.0, 2.0, 3.0, ],
+      [384.0, 0.0, 0.0, 0.0, 2.0, 3.0, ]
+    ]
+  }
+
+  d3.keypad_ending_cooked_ding =
+  {
+    type = "csgo_mega"
+    volume = 4
+    pitch = 1.000000
+    mixgroup = "Ambient"
+    vsnd_files_track_01 = "sounds/keypad_ending_cooked_ding.vsnd"
+    use_distance_unfiltered_stereo_mapping_curve = true
+    use_distance_volume_mapping_curve = true
+    distance_volume_mapping_curve =
+    [
+      [ 0.0, 1.0, 0.0, 0.0, 2.0, 3.0, ],
+      [512.0, 0.0, 0.0, 0.0, 2.0, 3.0, ]
+    ]
+  }
+
+  d3.keypad_ending_cooking =
+  {
+    type = "csgo_mega"
+    volume = 4
+    pitch = 1.000000
+    mixgroup = "Ambient"
+    vsnd_files_track_01 = "sounds/keypad_ending_cooking.vsnd"
+    use_distance_unfiltered_stereo_mapping_curve = true
+    use_distance_volume_mapping_curve = true
+    distance_volume_mapping_curve =
+    [
+      [ 0.0, 1.0, 0.0, 0.0, 2.0, 3.0, ],
+      [512.0, 0.0, 0.0, 0.0, 2.0, 3.0, ]
+    ]
+  }
+
+  d3.kz_40_success_rise =
+  {
+    type = "csgo_mega"
+    volume = 4
+    pitch = 1.000000
+    vsnd_files_track_01 = "sounds/kz_40_success_rise.vsnd"
+    restrict_source_reverb = true
+    disable_volume_culling = true
+    position_relative_to_player = true
+    use_distance_unfiltered_stereo_mapping_curve = true
+    distance_unfiltered_stereo_mapping_curve =
+    [
+      [
+        0, 1, 0, 0,
+        0, 0,
+      ],
+    ]
+  }
+
+  d3.kz_kill_awp_sound =
+  {
+    type = "csgo_mega"
+    volume = 8
+    pitch = 1.000000
+    mixgroup = "Ambient"
+    vsnd_files_track_01 = "sounds/kz_kill_awp_sound.vsnd"
+    use_distance_unfiltered_stereo_mapping_curve = true
+    use_distance_volume_mapping_curve = true
+    distance_volume_mapping_curve =
+    [
+      [ 0.0, 1.0, 0.0, 0.0, 2.0, 3.0, ],
+      [99999.0, 0.0, 0.0, 0.0, 2.0, 3.0, ]
+    ]
+  }
+
+  d3.kz_50_success_ambience =
+  {
+    type = "csgo_mega"
+    volume = 4
+    pitch = 1.000000
+    vsnd_files_track_01 = "sounds/kz_50_success_ambience.vsnd"
+    restrict_source_reverb = true
+    disable_volume_culling = true
+    position_relative_to_player = true
+    use_distance_unfiltered_stereo_mapping_curve = true
+    distance_unfiltered_stereo_mapping_curve =
+    [
+      [
+        0, 1, 0, 0,
+        0, 0,
+      ],
+    ]
+  }
+
+  d3.ending_credits_ffa_warmup =
+  {
+    type = "csgo_mega"
+    volume = 1
+    pitch = 1.000000
+    vsnd_files_track_01 = "sounds/ending_credits_ffa_warmup.vsnd"
+    restrict_source_reverb = true
+    disable_volume_culling = true
+    position_relative_to_player = true
+    use_distance_unfiltered_stereo_mapping_curve = true
+    distance_unfiltered_stereo_mapping_curve =
+    [
+      [
+        0, 1, 0, 0,
+        0, 0,
+      ],
+    ]
+  }
+
+  d3.ending_credits_ffa_start =
+  {
+    type = "csgo_mega"
+    volume = 1
+    pitch = 1.000000
+    vsnd_files_track_01 = "sounds/ending_credits_ffa_start.vsnd"
+    restrict_source_reverb = true
+    disable_volume_culling = true
+    position_relative_to_player = true
+    use_distance_unfiltered_stereo_mapping_curve = true
+    distance_unfiltered_stereo_mapping_curve =
+    [
+      [
+        0, 1, 0, 0,
+        0, 0,
+      ],
+    ]
+  }
+	
+	d3.ending_credits_ffa_win =
+  {
+    type = "csgo_mega"
+    volume = 1
+    pitch = 1.000000
+    vsnd_files_track_01 = "sounds/ending_credits_ffa_win.vsnd"
+    restrict_source_reverb = true
+    disable_volume_culling = true
+    position_relative_to_player = true
+    use_distance_unfiltered_stereo_mapping_curve = true
+    distance_unfiltered_stereo_mapping_curve =
+    [
+      [
+        0, 1, 0, 0,
+        0, 0,
+      ],
+    ]
+  }
+
+  d3.elevator_ding =
+  {
+    type = "csgo_mega"
+    volume = 4
+    pitch = 1.000000
+    mixgroup = "Ambient"
+    vsnd_files_track_01 = "sounds/elevator_ding.vsnd"
+    use_distance_unfiltered_stereo_mapping_curve = true
+    use_distance_volume_mapping_curve = true
+    distance_volume_mapping_curve =
+    [
+      [ 0.0, 1.0, 0.0, 0.0, 2.0, 3.0, ],
+      [384.0, 0.0, 0.0, 0.0, 2.0, 3.0, ]
+    ]
+  }
 
 }

@@ -53,7 +53,7 @@
 					{
 						m_bClampUVs = true
 					}
-					m_hTexture = resource:"materials/ddd/editor/point_script.vtex"
+					m_hTexture = resource:"materials/ddd/editor/logic_relay.vtex"
 				},
 			]
 			m_flRadiusScale = 

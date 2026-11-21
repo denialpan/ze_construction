@@ -56,41 +56,44 @@ const ZONE_PLAYER_COUNT_NAME = "ending_credits_ffa_player_count";
 const ZONE_SUCCESS_RELAY_NAME = "relay_ending_credits_ffa";
 const ZONE_REQUIRED_CT_RATIO = 0.75;
 const ZONE_HOLD_DURATION = 5;
-const RECOMMENDED_WEAPON_DAMAGE = new Map([
-    ["weapon_mp9", 10.1],
-    ["weapon_mac10", 10.1],
-    ["weapon_mp7", 10.1],
-    ["weapon_mp5sd", 10.1],
-    ["weapon_ump45", 12.1],
-    ["weapon_p90", 6.1],
-    ["weapon_bizon", 4.7],
+const FFA_WIN_SOUND_NAME = "sound_ending_credits_ffa_win";
+const FFA_WIN_CHAT_REPETITIONS = 10;
+const FFA_WIN_CHAT_INTERVAL = 0.3;
+const WEAPON_DAMAGE = new Map([
+    ["weapon_mp9", 10],
+    ["weapon_mac10", 10],
+    ["weapon_mp7", 10],
+    ["weapon_mp5sd", 10],
+    ["weapon_ump45", 12],
+    ["weapon_p90", 11],
+    ["weapon_bizon", 9],
     ["weapon_m4a1_silencer", 25.0],
-    ["weapon_ak47", 16.7],
+    ["weapon_ak47", 17],
     ["weapon_famas", 20.0],
-    ["weapon_m4a1", 16.7],
-    ["weapon_sg556", 16.7],
-    ["weapon_aug", 16.7],
-    ["weapon_galilar", 14.3],
-    ["weapon_deagle", 21.6],
-    ["weapon_cz75a", 12.6],
-    ["weapon_usp_silencer", 12.6],
-    ["weapon_p250", 11.7],
-    ["weapon_tec9", 8.4],
-    ["weapon_hkp2000", 11.7],
-    ["weapon_glock", 7.6],
-    ["weapon_fiveseven", 7.6],
-    ["weapon_elite", 5.1],
-    ["weapon_revolver", 18.9],
+    ["weapon_m4a1", 16],
+    ["weapon_sg556", 16],
+    ["weapon_aug", 16],
+    ["weapon_galilar", 15],
+    ["weapon_deagle", 25],
+    ["weapon_cz75a", 12],
+    ["weapon_usp_silencer", 13],
+    ["weapon_p250", 14],
+    ["weapon_tec9", 13],
+    ["weapon_hkp2000", 12],
+    ["weapon_glock", 9],
+    ["weapon_fiveseven", 11],
+    ["weapon_elite", 9],
+    ["weapon_revolver", 30],
     ["weapon_awp", 99],
     ["weapon_ssg08", 80],
-    ["weapon_negev", 2.7],
-    ["weapon_m249", 4.0],
-    ["weapon_g3sg1", 33.4],
-    ["weapon_scar20", 33.4],
-    ["weapon_xm1014", 28.8],
-    ["weapon_mag7", 40.0],
-    ["weapon_sawedoff", 28.8],
-    ["weapon_nova", 25.2]
+    ["weapon_negev", 8],
+    ["weapon_m249", 9],
+    ["weapon_g3sg1", 34],
+    ["weapon_scar20", 34],
+    ["weapon_xm1014", 30],
+    ["weapon_mag7", 40],
+    ["weapon_sawedoff", 30],
+    ["weapon_nova", 35]
 ]);
 
 const trackedRaytraceWeapons = new Map();
@@ -100,6 +103,8 @@ let hudCountdownState = null;
 let zoneSuccessTime = null;
 let zoneCompleted = false;
 let applyingRaytraceDamage = false;
+let ffaActive = false;
+let ffaResolved = false;
 
 function IsAliveCTPawn(pawn) {
     return pawn
@@ -125,9 +130,9 @@ function RegisterPlayerRaytraceWeapons(pawn) {
         const className = weapon.GetClassName();
         const damage = slot === CSGearSlot.KNIFE
             ? KNIFE_TRACE_DAMAGE
-            : RECOMMENDED_WEAPON_DAMAGE.get(className);
+            : WEAPON_DAMAGE.get(className);
         if (damage === undefined) {
-            Instance.Msg(`ending_credits_ffa.js: no recommended damage configured for ${className}.`);
+            Instance.Msg(`ending_credits_ffa.js: no damage configured for ${className}.`);
             continue;
         }
 
@@ -280,6 +285,62 @@ function GetAliveCTPlayerSlots() {
     return playerSlots;
 }
 
+function GetAliveZoneCTPlayers() {
+    const players = [];
+
+    for (const player of Instance.GetAllPlayerControllers()) {
+        if (!player || !player.IsConnected() || !zonePlayerSlots.has(player.GetPlayerSlot())) {
+            continue;
+        }
+
+        if (IsAliveCTPawn(player.GetPlayerPawn())) {
+            players.push(player);
+        }
+    }
+
+    return players;
+}
+
+function GetSafeChatPlayerName(player) {
+    if (!player || typeof player.GetPlayerName !== "function") {
+        return "No winner";
+    }
+
+    const playerName = String(player.GetPlayerName() || "")
+        .replace(/[\r\n;"\\]/g, "")
+        .trim();
+    return playerName || "Unnamed player";
+}
+
+function ResolveEndingCreditsFFAIfReady() {
+    if (!ffaActive || ffaResolved) {
+        return;
+    }
+
+    const aliveZoneCTPlayers = GetAliveZoneCTPlayers();
+    if (aliveZoneCTPlayers.length > 1) {
+        return;
+    }
+
+    ffaResolved = true;
+    ffaActive = false;
+
+    const winnerName = aliveZoneCTPlayers.length === 1
+        ? GetSafeChatPlayerName(aliveZoneCTPlayers[0])
+        : "No winner";
+
+    Instance.EntFireAtName({ name: FFA_WIN_SOUND_NAME, input: "PlaySound" });
+    for (let index = 0; index < FFA_WIN_CHAT_REPETITIONS; index++) {
+        Instance.Delay((index + 1) * FFA_WIN_CHAT_INTERVAL).then(() => {
+            Instance.ServerCommand(`say ${winnerName} has won the FFA!`);
+        });
+    }
+    Instance.Delay((FFA_WIN_CHAT_REPETITIONS + 1) * FFA_WIN_CHAT_INTERVAL).then(() => {
+        Instance.ServerCommand("mp_restartgame 4");
+    });
+    Instance.Msg(`ending_credits_ffa.js: FFA resolved with ${winnerName}; restarting round.`);
+}
+
 function SetZoneRemainingPlayerCount(remainingPlayers) {
     Instance.EntFireAtName({
         name: ZONE_PLAYER_COUNT_NAME,
@@ -377,6 +438,8 @@ function SetEndingCreditsZonePlayer(activator, isInside) {
             + `(${status.aliveCTCount} alive CTs total).`
         );
     }
+
+    ResolveEndingCreditsFFAIfReady();
 }
 
 function CompleteEndingCreditsZoneIfReady() {
@@ -803,6 +866,9 @@ function ApplyEndingCreditsFFA() {
 Instance.OnScriptInput(INPUT_START, () => {
     ApplyEndingCreditsFFA();
     StartEndingCreditsCountdown();
+    ffaActive = true;
+    ffaResolved = false;
+    ResolveEndingCreditsFFAIfReady();
 });
 
 Instance.OnScriptInput(ZONE_ADD_PLAYER_INPUT, ({ activator }) => {
@@ -815,6 +881,8 @@ Instance.OnScriptInput(ZONE_REMOVE_PLAYER_INPUT, ({ activator }) => {
 
 function ResetEndingCreditsState() {
     trackedRaytraceWeapons.clear();
+    ffaActive = false;
+    ffaResolved = false;
     ResetEndingCreditsHud();
     ResetEndingCreditsZone();
 }
@@ -827,6 +895,7 @@ Instance.SetThink(EndingCreditsHudThink);
 Instance.OnPlayerDisconnect((event) => {
     zonePlayerSlots.delete(event.playerSlot);
     RefreshEndingCreditsZone();
+    ResolveEndingCreditsFFAIfReady();
 });
 
 Instance.OnPlayerKill((event) => {
@@ -836,6 +905,7 @@ Instance.OnPlayerKill((event) => {
     }
 
     RefreshEndingCreditsZone();
+    ResolveEndingCreditsFFAIfReady();
 });
 
 Instance.OnModifyPlayerDamage((event) => {
