@@ -645,9 +645,11 @@ function ApplyDamageWithFallback(
     damageTypes = CSDamageTypes.BULLET
 ) {
     const beforeHealth = victim.GetHealth();
+    const baseDamageFlags = CSDamageFlags.IGNORE_ARMOR
+        | CSDamageFlags.SUPPRESS_DAMAGE_MODIFICATION;
     const damageFlags = beforeHealth <= damage
-        ? CSDamageFlags.IGNORE_ARMOR | CSDamageFlags.FORCE_DEATH
-        : CSDamageFlags.IGNORE_ARMOR;
+        ? baseDamageFlags | CSDamageFlags.FORCE_DEATH
+        : baseDamageFlags;
 
     applyingRaytraceDamage = true;
     try {
@@ -664,12 +666,20 @@ function ApplyDamageWithFallback(
             return;
         }
 
-        Instance.Msg("ending_credits_ffa.js: attributed damage did not pass, applying neutral fallback damage.");
-        victim.TakeDamage({
+        Instance.Msg("ending_credits_ffa.js: bullet damage did not pass, retrying attributed generic damage.");
+        const fallbackDamageTypes = damageTypes & CSDamageTypes.HEADSHOT;
+        const fallbackResult = victim.TakeDamage({
             damage,
-            damageTypes: CSDamageTypes.GENERIC,
-            damageFlags: CSDamageFlags.IGNORE_ARMOR
+            damageTypes: fallbackDamageTypes,
+            damageFlags,
+            inflictor: shooter,
+            attacker: shooter,
+            weapon
         });
+
+        if (!DamagePassed(victim, beforeHealth, fallbackResult)) {
+            Instance.Msg("ending_credits_ffa.js: attributed generic fallback damage did not pass.");
+        }
     } finally {
         applyingRaytraceDamage = false;
     }
