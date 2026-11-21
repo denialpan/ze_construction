@@ -2,6 +2,7 @@ import {
     CSDamageFlags,
     CSDamageTypes,
     CSGearSlot,
+    CSHitGroup,
     CSWeaponAttackType,
     Entity,
     Instance
@@ -12,11 +13,19 @@ const CT_TEAM = 3;
 const TARGET_MONEY = 67;
 const DEBUG_TRACE_LENGTH = 4096;
 const KNIFE_TRACE_LENGTH = 64;
-const KNIFE_TRACE_RADIUS = 24;
+const KNIFE_TRACE_RADIUS = 12;
 const DEBUG_TRACE_DURATION = 1.0;
 const DEBUG_TRACE_COLOR = { r: 255, g: 0, b: 0 };
 const KNIFE_TRACE_DAMAGE = 49.5;
 const KNIFE_SECONDARY_TRACE_DAMAGE = 99;
+const SNIPER_MAX_ENTITY_HITS = 5;
+const SNIPER_PENETRATION_DAMAGE_MULTIPLIER = 0.8;
+const SNIPER_WEAPON_CLASSES = new Set([
+    "weapon_awp",
+    "weapon_ssg08",
+    "weapon_g3sg1",
+    "weapon_scar20"
+]);
 const DAMAGE_TEST_ENTITY_NAME = "damage_test";
 const DAMAGE_TEST_DAMAGE = 100;
 const HUD_NAME = "hud_ending_credits_ffa";
@@ -147,6 +156,30 @@ function IsKnifeWeapon(weapon) {
     return weaponData
         && typeof weaponData.GetGearSlot === "function"
         && weaponData.GetGearSlot() === CSGearSlot.KNIFE;
+}
+
+function IsSniperWeapon(weapon) {
+    return weapon
+        && weapon.IsValid()
+        && SNIPER_WEAPON_CLASSES.has(weapon.GetClassName());
+}
+
+function GetHitGroupDamageMultiplier(hitGroup) {
+    switch (hitGroup) {
+        case CSHitGroup.HEAD:
+            return 1.25;
+        case CSHitGroup.LEFTARM:
+        case CSHitGroup.RIGHTARM:
+        case CSHitGroup.LEFTLEG:
+        case CSHitGroup.RIGHTLEG:
+            return 0.75;
+        case CSHitGroup.CHEST:
+        case CSHitGroup.STOMACH:
+        case CSHitGroup.NECK:
+        case CSHitGroup.GENERIC:
+        default:
+            return 1;
+    }
 }
 
 function GetForwardVector(angles) {
@@ -604,7 +637,13 @@ function DamagePassed(victim, beforeHealth, result) {
     return result > 0 || victim.GetHealth() < beforeHealth || !victim.IsAlive();
 }
 
-function ApplyDamageWithFallback(victim, shooter, weapon, damage) {
+function ApplyDamageWithFallback(
+    victim,
+    shooter,
+    weapon,
+    damage,
+    damageTypes = CSDamageTypes.BULLET
+) {
     const beforeHealth = victim.GetHealth();
     const damageFlags = beforeHealth <= damage
         ? CSDamageFlags.IGNORE_ARMOR | CSDamageFlags.FORCE_DEATH
@@ -614,7 +653,7 @@ function ApplyDamageWithFallback(victim, shooter, weapon, damage) {
     try {
         const result = victim.TakeDamage({
             damage,
-            damageTypes: CSDamageTypes.BULLET,
+            damageTypes,
             damageFlags,
             inflictor: shooter,
             attacker: shooter,
@@ -652,57 +691,78 @@ function FireScriptedWeaponTrace(weapon, damageOverride) {
         return;
     }
 
-    const damage = damageOverride ?? trackedRaytraceWeapons.get(weapon);
-    if (damage === undefined) {
+    const initialDamage = damageOverride ?? trackedRaytraceWeapons.get(weapon);
+    if (initialDamage === undefined) {
         return;
     }
 
     const start = owner.GetEyePosition();
     const forward = GetForwardVector(owner.GetEyeAngles());
     const isKnife = IsKnifeWeapon(weapon);
+    const isSniper = IsSniperWeapon(weapon);
     const traceLength = isKnife ? KNIFE_TRACE_LENGTH : DEBUG_TRACE_LENGTH;
     const end = AddVectors(start, ScaleVector(forward, traceLength));
-    const traceConfig = {
-        start,
-        end,
-        ignoreEntity: owner,
-        traceHitboxes: true
-    };
-    const trace = isKnife
-        ? Instance.TraceSphere({ ...traceConfig, radius: KNIFE_TRACE_RADIUS })
-        : Instance.TraceLine(traceConfig);
+    const maxEntityHits = isSniper ? SNIPER_MAX_ENTITY_HITS : 1;
+    const ignoredEntities = [owner];
+    let traceStart = start;
+    let damage = initialDamage;
 
-    Instance.DebugLine({
-        start,
-        end: trace.didHit ? trace.end : end,
-        duration: DEBUG_TRACE_DURATION,
-        color: DEBUG_TRACE_COLOR
-    });
+    for (let hitIndex = 0; hitIndex < maxEntityHits; hitIndex++) {
+        const traceConfig = {
+            start: traceStart,
+            end,
+            ignoreEntity: ignoredEntities,
+            traceHitboxes: true
+        };
+        const trace = isKnife
+            ? Instance.TraceSphere({ ...traceConfig, radius: KNIFE_TRACE_RADIUS })
+            : Instance.TraceLine(traceConfig);
 
-    if (!trace.didHit) {
-        Instance.Msg(`ending_credits_ffa.js: scripted ${weapon.GetClassName()} trace did not hit anything.`);
-        return;
+        Instance.DebugLine({
+            start: traceStart,
+            end: trace.didHit ? trace.end : end,
+            duration: DEBUG_TRACE_DURATION,
+            color: DEBUG_TRACE_COLOR
+        });
+
+        if (!trace.didHit) {
+            if (hitIndex === 0) {
+                Instance.Msg(`ending_credits_ffa.js: scripted ${weapon.GetClassName()} trace did not hit anything.`);
+            }
+            return;
+        }
+
+        if (!trace.hitEntity) {
+            return;
+        }
+
+        if (IsDamageTestEntity(trace.hitEntity)) {
+            KillRandomCTFromDamageTest(owner, weapon);
+            return;
+        }
+
+        if (!IsDifferentAliveCTPawn(trace.hitEntity, owner)) {
+            return;
+        }
+
+        const hitDamage = damage * GetHitGroupDamageMultiplier(trace.hitGroup);
+        const damageTypes = trace.hitGroup === CSHitGroup.HEAD
+            ? CSDamageTypes.BULLET | CSDamageTypes.HEADSHOT
+            : CSDamageTypes.BULLET;
+        Instance.Msg(
+            `ending_credits_ffa.js: scripted ${weapon.GetClassName()} trace hit `
+            + `${DescribeEntity(trace.hitEntity)} for ${hitDamage} damage `
+            + `(hitgroup ${trace.hitGroup ?? CSHitGroup.GENERIC}).`
+        );
+        ApplyDamageWithFallback(trace.hitEntity, owner, weapon, hitDamage, damageTypes);
+        if (!isSniper) {
+            return;
+        }
+
+        ignoredEntities.push(trace.hitEntity);
+        traceStart = AddVectors(trace.end, ScaleVector(forward, 0.1));
+        damage *= SNIPER_PENETRATION_DAMAGE_MULTIPLIER;
     }
-
-    Instance.Msg(
-        `ending_credits_ffa.js: scripted ${weapon.GetClassName()} trace hit `
-        + `${DescribeEntity(trace.hitEntity)} for ${damage} damage.`
-    );
-
-    if (!trace.hitEntity) {
-        return;
-    }
-
-    if (IsDamageTestEntity(trace.hitEntity)) {
-        KillRandomCTFromDamageTest(owner, weapon);
-        return;
-    }
-
-    if (!IsDifferentAliveCTPawn(trace.hitEntity, owner)) {
-        return;
-    }
-
-    ApplyDamageWithFallback(trace.hitEntity, owner, weapon, damage);
 }
 
 function ApplyEndingCreditsFFA() {
