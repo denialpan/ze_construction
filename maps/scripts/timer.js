@@ -25,7 +25,7 @@ const TIMER_CONFIGS = {
     },
 		
 		floor_elevators: {
-        duration: 10,
+        duration: 140,
         textEntity: "",
         finishTarget: "relay_open_elevators",
         finishInput: "Trigger"
