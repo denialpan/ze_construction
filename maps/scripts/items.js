@@ -285,9 +285,11 @@ function DamagePassed(victim, beforeHealth, result) {
 
 function ApplyHitscanDamageWithFallback(victim, shooter, weapon, damage) {
     const beforeHealth = victim.GetHealth();
+    const baseDamageFlags = CSDamageFlags.IGNORE_ARMOR
+        | CSDamageFlags.SUPPRESS_DAMAGE_MODIFICATION;
     const damageFlags = beforeHealth <= damage
-        ? CSDamageFlags.IGNORE_ARMOR | CSDamageFlags.FORCE_DEATH
-        : CSDamageFlags.IGNORE_ARMOR;
+        ? baseDamageFlags | CSDamageFlags.FORCE_DEATH
+        : baseDamageFlags;
 
     const result = victim.TakeDamage({
         damage,
@@ -303,13 +305,20 @@ function ApplyHitscanDamageWithFallback(victim, shooter, weapon, damage) {
     }
 
     Instance.Msg(
-        "items.js: attributed hitscan damage did not pass, applying neutral fallback damage."
+        "items.js: bullet hitscan damage did not pass, retrying attributed generic damage."
     );
-    victim.TakeDamage({
+    const fallbackResult = victim.TakeDamage({
         damage,
         damageTypes: CSDamageTypes.GENERIC,
-        damageFlags: CSDamageFlags.IGNORE_ARMOR
+        damageFlags,
+        attacker: shooter,
+        inflictor: shooter,
+        weapon
     });
+
+    if (!DamagePassed(victim, beforeHealth, fallbackResult)) {
+        Instance.Msg("items.js: attributed generic fallback damage did not pass.");
+    }
 }
 
 function GetSniperHitscanDamage() {

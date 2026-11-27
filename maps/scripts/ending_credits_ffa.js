@@ -2,7 +2,6 @@ import {
     CSDamageFlags,
     CSDamageTypes,
     CSGearSlot,
-    CSHitGroup,
     CSWeaponAttackType,
     Entity,
     Instance
@@ -13,7 +12,6 @@ const CT_TEAM = 3;
 const TARGET_MONEY = 67;
 const DEBUG_TRACE_LENGTH = 4096;
 const KNIFE_TRACE_LENGTH = 64;
-const KNIFE_TRACE_RADIUS = 12;
 const DEBUG_TRACE_DURATION = 1.0;
 const DEBUG_TRACE_COLOR = { r: 255, g: 0, b: 0 };
 const KNIFE_TRACE_DAMAGE = 49.5;
@@ -26,8 +24,13 @@ const SNIPER_WEAPON_CLASSES = new Set([
     "weapon_g3sg1",
     "weapon_scar20"
 ]);
+const PLAYER_HULL_HALF_WIDTH = 16;
+const PLAYER_HULL_STANDING_HEIGHT = 72;
+const PLAYER_HULL_DUCKED_HEIGHT = 36;
+const RAY_PARALLEL_EPSILON = 0.000001;
 const DAMAGE_TEST_ENTITY_NAME = "damage_test";
 const DAMAGE_TEST_DAMAGE = 100;
+const PLAYER_FREEZE_ENTITY_NAME = "ending_credits_ffa_player_freeze";
 const HUD_NAME = "hud_ending_credits_ffa";
 const HUD_PANEL_ID = "ending_credits_ffa_hud";
 const HUD_COUNTDOWN_LABEL_ID = "ending_credits_ffa_countdown";
@@ -59,41 +62,41 @@ const ZONE_HOLD_DURATION = 5;
 const FFA_WIN_SOUND_NAME = "sound_ending_credits_ffa_win";
 const FFA_WIN_CHAT_REPETITIONS = 10;
 const FFA_WIN_CHAT_INTERVAL = 0.3;
-const WEAPON_DAMAGE = new Map([
-    ["weapon_mp9", 10],
-    ["weapon_mac10", 10],
-    ["weapon_mp7", 10],
-    ["weapon_mp5sd", 10],
-    ["weapon_ump45", 12],
-    ["weapon_p90", 11],
-    ["weapon_bizon", 9],
+const RECOMMENDED_WEAPON_DAMAGE = new Map([
+    ["weapon_mp9", 10.1],
+    ["weapon_mac10", 10.1],
+    ["weapon_mp7", 10.1],
+    ["weapon_mp5sd", 10.1],
+    ["weapon_ump45", 12.1],
+    ["weapon_p90", 6.1],
+    ["weapon_bizon", 4.7],
     ["weapon_m4a1_silencer", 25.0],
-    ["weapon_ak47", 17],
+    ["weapon_ak47", 16.7],
     ["weapon_famas", 20.0],
-    ["weapon_m4a1", 16],
-    ["weapon_sg556", 16],
-    ["weapon_aug", 16],
-    ["weapon_galilar", 15],
-    ["weapon_deagle", 25],
-    ["weapon_cz75a", 12],
-    ["weapon_usp_silencer", 13],
-    ["weapon_p250", 14],
-    ["weapon_tec9", 13],
-    ["weapon_hkp2000", 12],
-    ["weapon_glock", 9],
-    ["weapon_fiveseven", 11],
-    ["weapon_elite", 9],
-    ["weapon_revolver", 30],
+    ["weapon_m4a1", 16.7],
+    ["weapon_sg556", 16.7],
+    ["weapon_aug", 16.7],
+    ["weapon_galilar", 14.3],
+    ["weapon_deagle", 21.6],
+    ["weapon_cz75a", 12.6],
+    ["weapon_usp_silencer", 12.6],
+    ["weapon_p250", 11.7],
+    ["weapon_tec9", 8.4],
+    ["weapon_hkp2000", 11.7],
+    ["weapon_glock", 7.6],
+    ["weapon_fiveseven", 7.6],
+    ["weapon_elite", 5.1],
+    ["weapon_revolver", 18.9],
     ["weapon_awp", 99],
     ["weapon_ssg08", 80],
-    ["weapon_negev", 8],
-    ["weapon_m249", 9],
-    ["weapon_g3sg1", 34],
-    ["weapon_scar20", 34],
-    ["weapon_xm1014", 30],
-    ["weapon_mag7", 40],
-    ["weapon_sawedoff", 30],
-    ["weapon_nova", 35]
+    ["weapon_negev", 8.7],
+    ["weapon_m249", 4.0],
+    ["weapon_g3sg1", 33.4],
+    ["weapon_scar20", 33.4],
+    ["weapon_xm1014", 28.8],
+    ["weapon_mag7", 40.0],
+    ["weapon_sawedoff", 28.8],
+    ["weapon_nova", 25.2]
 ]);
 
 const trackedRaytraceWeapons = new Map();
@@ -130,9 +133,9 @@ function RegisterPlayerRaytraceWeapons(pawn) {
         const className = weapon.GetClassName();
         const damage = slot === CSGearSlot.KNIFE
             ? KNIFE_TRACE_DAMAGE
-            : WEAPON_DAMAGE.get(className);
+            : RECOMMENDED_WEAPON_DAMAGE.get(className);
         if (damage === undefined) {
-            Instance.Msg(`ending_credits_ffa.js: no damage configured for ${className}.`);
+            Instance.Msg(`ending_credits_ffa.js: no recommended damage configured for ${className}.`);
             continue;
         }
 
@@ -169,24 +172,6 @@ function IsSniperWeapon(weapon) {
         && SNIPER_WEAPON_CLASSES.has(weapon.GetClassName());
 }
 
-function GetHitGroupDamageMultiplier(hitGroup) {
-    switch (hitGroup) {
-        case CSHitGroup.HEAD:
-            return 1.25;
-        case CSHitGroup.LEFTARM:
-        case CSHitGroup.RIGHTARM:
-        case CSHitGroup.LEFTLEG:
-        case CSHitGroup.RIGHTLEG:
-            return 0.75;
-        case CSHitGroup.CHEST:
-        case CSHitGroup.STOMACH:
-        case CSHitGroup.NECK:
-        case CSHitGroup.GENERIC:
-        default:
-            return 1;
-    }
-}
-
 function GetForwardVector(angles) {
     const pitchRadians = (angles.pitch * Math.PI) / 180;
     const yawRadians = (angles.yaw * Math.PI) / 180;
@@ -199,24 +184,64 @@ function GetForwardVector(angles) {
     };
 }
 
-function AddVectors(a, b) {
-    return {
-        x: a.x + b.x,
-        y: a.y + b.y,
-        z: a.z + b.z
-    };
-}
-
-function ScaleVector(vector, scale) {
-    return {
-        x: vector.x * scale,
-        y: vector.y * scale,
-        z: vector.z * scale
-    };
-}
-
 function IsDifferentAliveCTPawn(pawn, shooter) {
     return IsAliveCTPawn(pawn) && pawn !== shooter;
+}
+
+function GetRayAabbDistance(start, direction, mins, maxs, maxDistance) {
+    let minimumDistance = 0;
+    let maximumDistance = maxDistance;
+
+    for (const axis of ["x", "y", "z"]) {
+        const axisDirection = direction[axis];
+        const axisStart = start[axis];
+
+        if (Math.abs(axisDirection) <= RAY_PARALLEL_EPSILON) {
+            if (axisStart < mins[axis] || axisStart > maxs[axis]) {
+                return undefined;
+            }
+            continue;
+        }
+
+        const inverseDirection = 1 / axisDirection;
+        let nearDistance = (mins[axis] - axisStart) * inverseDirection;
+        let farDistance = (maxs[axis] - axisStart) * inverseDirection;
+
+        if (nearDistance > farDistance) {
+            const swap = nearDistance;
+            nearDistance = farDistance;
+            farDistance = swap;
+        }
+
+        minimumDistance = Math.max(minimumDistance, nearDistance);
+        maximumDistance = Math.min(maximumDistance, farDistance);
+
+        if (minimumDistance > maximumDistance) {
+            return undefined;
+        }
+    }
+
+    return minimumDistance <= maxDistance ? minimumDistance : undefined;
+}
+
+function GetPlayerHull(pawn) {
+    const origin = pawn.GetAbsOrigin();
+    const height = pawn.IsDucked()
+        ? PLAYER_HULL_DUCKED_HEIGHT
+        : PLAYER_HULL_STANDING_HEIGHT;
+
+    return {
+        mins: {
+            x: origin.x - PLAYER_HULL_HALF_WIDTH,
+            y: origin.y - PLAYER_HULL_HALF_WIDTH,
+            z: origin.z
+        },
+        maxs: {
+            x: origin.x + PLAYER_HULL_HALF_WIDTH,
+            y: origin.y + PLAYER_HULL_HALF_WIDTH,
+            z: origin.z + height
+        }
+    };
 }
 
 function IsDamageTestEntity(entity) {
@@ -224,6 +249,13 @@ function IsDamageTestEntity(entity) {
         && entity.IsValid()
         && typeof entity.GetEntityName === "function"
         && entity.GetEntityName() === DAMAGE_TEST_ENTITY_NAME;
+}
+
+function IsPlayerFreezeEntity(entity) {
+    return entity
+        && entity.IsValid()
+        && typeof entity.GetEntityName === "function"
+        && entity.GetEntityName() === PLAYER_FREEZE_ENTITY_NAME;
 }
 
 function DescribeEntity(entity) {
@@ -730,10 +762,9 @@ function ApplyDamageWithFallback(
         }
 
         Instance.Msg("ending_credits_ffa.js: bullet damage did not pass, retrying attributed generic damage.");
-        const fallbackDamageTypes = damageTypes & CSDamageTypes.HEADSHOT;
         const fallbackResult = victim.TakeDamage({
             damage,
-            damageTypes: fallbackDamageTypes,
+            damageTypes: CSDamageTypes.GENERIC,
             damageFlags,
             inflictor: shooter,
             attacker: shooter,
@@ -760,7 +791,11 @@ function KillRandomCTFromDamageTest(shooter, weapon) {
 
 function FireScriptedWeaponTrace(weapon, damageOverride) {
     const owner = weapon.GetOwner();
-    if (!owner || !owner.IsValid()) {
+    if (!owner || !owner.IsValid() || !owner.IsAlive()) {
+        return;
+    }
+
+    if (owner.GetActiveWeapon() !== weapon) {
         return;
     }
 
@@ -774,68 +809,88 @@ function FireScriptedWeaponTrace(weapon, damageOverride) {
     const isKnife = IsKnifeWeapon(weapon);
     const isSniper = IsSniperWeapon(weapon);
     const traceLength = isKnife ? KNIFE_TRACE_LENGTH : DEBUG_TRACE_LENGTH;
-    const end = AddVectors(start, ScaleVector(forward, traceLength));
-    const maxEntityHits = isSniper ? SNIPER_MAX_ENTITY_HITS : 1;
-    const ignoredEntities = [owner];
-    let traceStart = start;
-    let damage = initialDamage;
+    const end = {
+        x: start.x + forward.x * traceLength,
+        y: start.y + forward.y * traceLength,
+        z: start.z + forward.z * traceLength
+    };
+    const hits = [];
 
-    for (let hitIndex = 0; hitIndex < maxEntityHits; hitIndex++) {
-        const traceConfig = {
-            start: traceStart,
-            end,
-            ignoreEntity: ignoredEntities,
-            traceHitboxes: true
-        };
-        const trace = isKnife
-            ? Instance.TraceSphere({ ...traceConfig, radius: KNIFE_TRACE_RADIUS })
-            : Instance.TraceLine(traceConfig);
+    const safeguardTrace = Instance.TraceLine({
+        start,
+        end,
+        ignoreEntity: owner,
+        traceHitboxes: true
+    });
 
-        Instance.DebugLine({
-            start: traceStart,
-            end: trace.didHit ? trace.end : end,
-            duration: DEBUG_TRACE_DURATION,
-            color: DEBUG_TRACE_COLOR
-        });
-
-        if (!trace.didHit) {
-            if (hitIndex === 0) {
-                Instance.Msg(`ending_credits_ffa.js: scripted ${weapon.GetClassName()} trace did not hit anything.`);
-            }
-            return;
-        }
-
-        if (!trace.hitEntity) {
-            return;
-        }
-
-        if (IsDamageTestEntity(trace.hitEntity)) {
-            KillRandomCTFromDamageTest(owner, weapon);
-            return;
-        }
-
-        if (!IsDifferentAliveCTPawn(trace.hitEntity, owner)) {
-            return;
-        }
-
-        const hitDamage = damage * GetHitGroupDamageMultiplier(trace.hitGroup);
-        const damageTypes = trace.hitGroup === CSHitGroup.HEAD
-            ? CSDamageTypes.BULLET | CSDamageTypes.HEADSHOT
-            : CSDamageTypes.BULLET;
+    if (safeguardTrace.didHit && IsPlayerFreezeEntity(safeguardTrace.hitEntity)) {
         Instance.Msg(
-            `ending_credits_ffa.js: scripted ${weapon.GetClassName()} trace hit `
-            + `${DescribeEntity(trace.hitEntity)} for ${hitDamage} damage `
-            + `(hitgroup ${trace.hitGroup ?? CSHitGroup.GENERIC}).`
+            `ending_credits_ffa.js: ${weapon.GetClassName()} trace hit `
+            + `${PLAYER_FREEZE_ENTITY_NAME}; ignoring the shot.`
         );
-        ApplyDamageWithFallback(trace.hitEntity, owner, weapon, hitDamage, damageTypes);
-        if (!isSniper) {
-            return;
+        return;
+    }
+
+    if (safeguardTrace.didHit && IsDamageTestEntity(safeguardTrace.hitEntity)) {
+        KillRandomCTFromDamageTest(owner, weapon);
+        return;
+    }
+
+    for (const player of Instance.GetAllPlayerControllers()) {
+        if (!player || !player.IsConnected()) {
+            continue;
         }
 
-        ignoredEntities.push(trace.hitEntity);
-        traceStart = AddVectors(trace.end, ScaleVector(forward, 0.1));
-        damage *= SNIPER_PENETRATION_DAMAGE_MULTIPLIER;
+        const target = player.GetPlayerPawn();
+        if (!IsDifferentAliveCTPawn(target, owner)) {
+            continue;
+        }
+
+        const hull = GetPlayerHull(target);
+        const distance = GetRayAabbDistance(
+            start,
+            forward,
+            hull.mins,
+            hull.maxs,
+            traceLength
+        );
+
+        if (distance !== undefined) {
+            hits.push({ target, distance });
+        }
     }
+
+    hits.sort((a, b) => a.distance - b.distance);
+
+    Instance.DebugLine({
+        start,
+        end,
+        duration: DEBUG_TRACE_DURATION,
+        color: DEBUG_TRACE_COLOR
+    });
+
+    const maximumHits = isSniper
+        ? Math.min(hits.length, SNIPER_MAX_ENTITY_HITS)
+        : hits.length;
+    let hitDamage = initialDamage;
+
+    for (let hitIndex = 0; hitIndex < maximumHits; hitIndex++) {
+        const hit = hits[hitIndex];
+        Instance.Msg(
+            `ending_credits_ffa.js: scripted ${weapon.GetClassName()} hull trace hit `
+            + `${DescribeEntity(hit.target)} for ${hitDamage} damage.`
+        );
+        ApplyDamageWithFallback(hit.target, owner, weapon, hitDamage);
+
+        if (isSniper) {
+            hitDamage *= SNIPER_PENETRATION_DAMAGE_MULTIPLIER;
+        }
+    }
+
+    Instance.Msg(
+        `ending_credits_ffa.js: scripted ${weapon.GetClassName()} hull trace reached `
+        + `${maximumHits} CT player(s) over ${traceLength} units.`
+    );
 }
 
 function ApplyEndingCreditsFFA() {
